@@ -1,0 +1,55 @@
+
+/*Position chat with this container*/
+#container{
+
+
+	padding-top: 200px;
+}
+
+ #chatContainer{
+ 	/*overflow:   none;*/
+    position:   relative;
+    width:      75%;
+    height:     200px;
+    border: 1px solid #ccc;
+ }
+
+
+#m{
+	 width:  50%;
+}
+
+
+#demo{
+  	/*height:200px;
+    width:400px;
+    border: 1px solid #ccc;
+    display: flex;
+	justify-content: flex-end;
+	flex-direction: column;*/
+	/*-webkit-flex: 1 1 auto;
+    overflow-y: scroll;
+    display: flex;
+	justify-content: flex-end;
+	flex-direction: column;
+  	height: 100px;*/
+	overflow:   auto;
+    position:   absolute;
+    bottom:     0;
+    width: 100%;
+    max-height: 200px;
+}
+
+
+
+ #chat{
+ 	 padding-top: 200px;
+ }
+
+
+.chatmessages{
+	    margin:1px;
+	    padding:1px;
+	    word-break:break-all;
+    }
+
