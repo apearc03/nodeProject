@@ -2,8 +2,8 @@
 /*Position chat with this container*/
 #container{
 
-
-	padding-top: 200px;
+	padding-top: 500px;
+	
 }
 
  #chatContainer{
@@ -20,19 +20,8 @@
 }
 
 
-#demo{
-  	/*height:200px;
-    width:400px;
-    border: 1px solid #ccc;
-    display: flex;
-	justify-content: flex-end;
-	flex-direction: column;*/
-	/*-webkit-flex: 1 1 auto;
-    overflow-y: scroll;
-    display: flex;
-	justify-content: flex-end;
-	flex-direction: column;
-  	height: 100px;*/
+#chatLog{
+
 	overflow:   auto;
     position:   absolute;
     bottom:     0;
@@ -45,6 +34,7 @@
 
 
  #chat{
+
  	 padding-top: 200px;
  }
 
@@ -70,4 +60,8 @@
     bottom:     0;
     width: 100%;
     max-height: 200px;
+}
+
+#onlineCount{
+	
 }

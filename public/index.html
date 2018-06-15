@@ -24,11 +24,14 @@
 
 $(function(){	//document ready
 
+  var socket = io();
+  var connectionLogMax = 50;
+  var chatLogMax = 50;
+
    $('#container').hide();
    $('#nickError').hide();
 
-  var socket = io();
-
+ 
 
   	$('#chat').submit(function(){
 
@@ -37,28 +40,45 @@ $(function(){	//document ready
       }
 
       $('#m').val('');
-      
+
   		return false;
 
   	});
 
 
-    //get nickname
+ 
     $('#nickSubmit').submit(function(){
 
       $('#nickError').hide();
 
-      var validated = /^[A-Z]+$/i.test($('#nickname').val().trim());
+      var validated = /^[A-Z]+$/i.test($('#nickname').val().trim()); //Check if trimmed nickname only contains letters
 
           
-        //do some validation checks on $('#nickname').val()). If passed socket emit to server and unhide all other divs. Hide nickname div. Trim spaces from either side.
+  
       if(validated){
+
+        
             socket.emit('nickname',$('#nickname').val());
-            $('#nickSubmit').hide();
-            $('#container').show();
+
+                 socket.on('nameTaken', function(taken){
+
+                      if(taken){
+                          $('#nickError').text("The nickname is taken");
+                          $('#nickError').show();
+                      }
+                      else{
+                        $('#nickError').hide();
+                        $('#nickSubmit').hide();
+                        $('#container').show();
+                      }
+                  });
+
+                 
+  
       }
       else{
-         $('#nickError').show();
+        $('#nickError').text("Nickname must only contain letters");
+        $('#nickError').show();
       }
 
         
@@ -67,19 +87,27 @@ $(function(){	//document ready
      return false;
     });
  
+
+
+
     //User chose nickname and connected
-    socket.on('newNick', function(nick){
+    socket.on('newNick', function(nick, onlineCount){
 
       $('#log').append($('<div>').text(nick + "  connected"));
-      chatUpdate('#log',50);
+       $('#onlineCount').text(onlineCount + "  online");
+      chatUpdate('#log',connectionLogMax);
     });
 
     //on user disconnect
-    socket.on('disconnect', function(nick){
+    socket.on('disconnect', function(nick,onlineCount){
+
 
       $('#log').append($('<div>').text(nick + "  disconnected"));
+       $('#onlineCount').text(onlineCount + "  online");
+      chatUpdate('#log',connectionLogMax);
 
-      chatUpdate('#log',50);
+
+
 
     });
 
@@ -87,10 +115,10 @@ $(function(){	//document ready
   	socket.on('chat message', function(msg){
   	
 
-  			$('#demo').append($('<div class ="chatmessages">').text(msg));
+  			$('#chatLog').append($('<div class ="chatmessages">').text(msg));
 
 
-        chatUpdate('#demo',50);
+        chatUpdate('#chatLog',chatLogMax); //Entries in chat updated
 
   	});
 
@@ -111,18 +139,22 @@ $(function(){	//document ready
       <input id="nickname" autocomplete="off" maxlength="100"/><button>Send nickname</button>
   </form>
   <div id = "nickError">
-    Nickname must not be empty and only contain letters.
+    
   </div>
 </div>
 
 
 
+    
 <div class = "container-fluid " id = "container">
+  <div id = "onlineCount">
+          <!-- online count -->
+    </div>
   <div class = "row">
   <div id = "chatContainer">
 
-     <div id="demo">
-
+     <div id="chatLog">
+        <!-- Chat log -->
       </div>
       <form id = "chat" action="">
           <input id="m" autocomplete="off" maxlength="100"/><button>Send</button>
@@ -130,12 +162,14 @@ $(function(){	//document ready
     </div>
     <div id = "logContainer">
         <div id = "log">
-          
+          <!-- Connected and disconnected player log -->
         </div>
+        
     </div>
   </div>
+
 </div>  
-  
+    
    
 
 

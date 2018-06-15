@@ -40,9 +40,14 @@ io.on('connection', function(socket){
 
 	socket.on('disconnect', function(){
 
-		io.emit('disconnect', nickNames.get(socket.id));
+		//Frees up nickname from map only if it has been taken
+		if(nickNames.has(socket.id)){
 
-		nickNames.delete(socket.id); //Frees up nickname
+
+			io.emit('disconnect', nickNames.get(socket.id), nickNames.size-1);
+		    nickNames.delete(socket.id);
+		}
+	 	
 		console.log(socket.id + 'a user disconnected');
 
 		
@@ -63,15 +68,13 @@ io.on('connection', function(socket){
 		  }
 		}	
 
-		if(taken){
+		if(!taken){
 			//check if nickname is taken. Emit to the socket only not all sockets.
-			console.log("Nickname taken");
-		}else{
-			//Add nick to map if it isnt
-			io.emit('newNick', nick); //emit which user connected.
-
 			nickNames.set(socket.id,nick);
+			io.emit('newNick', nick, nickNames.size); //emit which user connected.
 		}
+
+		socket.emit('nameTaken', taken); //Emit if the nickname was taken or not.
 
 
 	});
