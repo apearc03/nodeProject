@@ -96,20 +96,20 @@ $(function(){	//document ready
       chatUpdate('#log',connectionLogMax);
     });*/
 
-    socket.on('newNick', function(player, playerCount){
+    socket.on('newNick', function(players, player){
 
       $('#log').append($('<div>').text(player.playerName + "  connected"));
-       $('#onlineCount').text(playerCount + "  online");
+       $('#onlineCount').text(Object.keys(players).length + "  online");
       chatUpdate('#log',connectionLogMax);
     });
 
 
 
     //on user disconnect
-    socket.on('disconnect', function(nick,onlineCount){
+    socket.on('disconnect', function(player,onlineCount){
 
 
-      $('#log').append($('<div>').text(nick + "  disconnected"));
+      $('#log').append($('<div>').text(player.playerName + "  disconnected"));
        $('#onlineCount').text(onlineCount + "  online");
       chatUpdate('#log',connectionLogMax);
 
@@ -145,30 +145,76 @@ $(function(){	//document ready
    
     
 
+  //var connectedPlayers;
+  var firstConnection = false;
+  var connectedSprites = {};
 
-
-   
 
     function create() {
-      //addG();
+      
 
       var self = this;
-
+      //connectedPlayers = this.add.group();
     
-       socket.on('newNick', function(player, playerCount){
+       socket.on('newNick', function(players, newestPlayer){
 
-          self.add.image(200,200, 'ship');
-          //this.game.ship = this.game.physics.add.image(x, x, 'ship').setOrigin(0.5, 0.5).setDisplaySize(53, 40);
-     
+        //var newPlayer = self.add.image(players[socket].x,200, 'ship'); //Need to only add the new ships to the group. Not the existing ones.
+        //newPlayer.id = sock;
+        //connectedPlayers.add(newPlayer);
+
+        if(!firstConnection){
+
+            for (var sock in players){    
+                  if (players.hasOwnProperty(sock)){
+                      /*var newPlayer = self.add.image(players[sock].x,200, 'ship'); //Need to only add the new ships to the group. Not the existing ones.
+                        newPlayer.playerID = sock;
+                        newPlayer.name = newestPlayer.playerName;
+                        connectedPlayers.add(newPlayer);*/
+                        connectedSprites[sock] = self.add.sprite(players[sock].x,200, 'ship');
+
+                     }
+                 }
+                firstConnection = true; 
+            }
+            else{
+              /*
+                var newPlayer = self.add.image(players[newestPlayer.id].x,200, 'ship'); //Need to only add the new ships to the group. Not the existing ones.
+                newPlayer.playerID = newestPlayer.id;
+                newPlayer.name = newestPlayer.playerName;
+                connectedPlayers.add(newPlayer);
+                */
+                connectedSprites[newestPlayer.id] = self.add.sprite(players[newestPlayer.id].x,200, 'ship');
+
+            }
+
+
+
+
       });
+
+       socket.on('disconnect', function(player,onlineCount){
+
+
+          connectedSprites[player.id].destroy();
+       
+                 /*connectedPlayers.getChildren().forEach(function (otherPlayer) {
+                    if (player.id === otherPlayer.playerID) {
+                      //$('#TEST').append($('<div>').text(connectedPlayers.getByName(player.playerName).playerID));
+                       $('#TEST').append($('<div>').text(connectedPlayers.getChildren().getByName(player.playerName)));
+                      otherPlayer.destroy();
+
+                    }
+                  });  */   
+              
+               
+      });
+
+
 
   
     }   
 
 
-    function addG(){
-       
-    }
 
    // game.create = function(){}
 

@@ -53,8 +53,7 @@ io.on('connection', function(socket){
 		if(socket.id in players){
 
 				//io.emit('disconnect', players[socket.id].playerName, players.size-1); //This will be change to players.get(socket.id).nickname
-				io.emit('disconnect', players[socket.id].playerName, Object.keys(players).length-1);
-				
+				io.emit('disconnect', players[socket.id], Object.keys(players).length-1);
 				delete players[socket.id];
 		}
 
@@ -94,13 +93,14 @@ io.on('connection', function(socket){
 		if(!taken){
 			//check if nickname is taken. Emit to the socket only not all sockets.
 			//players.set(socket.id,nick); //Instead mapping socket.id to nickname. Map socket.id to a new player object that includes a nickname.
-			//players.set(socket.id,{playerName:nick});
-			players[socket.id] = {playerName:nick};
+		
+			players[socket.id] = 
+			{playerName:nick,
+			id:socket.id,
+			x:Math.floor(Math.random() * 160) + 5};
 
-			//io.emit('newNick', nick, players.size); //emit which user connected.
-			//io.emit('newNick', nick, Object.keys(players).length); 
-			io.emit('newNick', players[socket.id], Object.keys(players).length);
-			io.emit('test', players[socket.id], Object.keys(players).length); //added
+
+			io.emit('newNick', players, players[socket.id]);
 		}
 
 
