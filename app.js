@@ -6,6 +6,8 @@ var http = require('http').Server(app);
 var io = require('socket.io')(http);
 
 
+
+
 app.use(express.static(__dirname + '/public'));
 
 
@@ -21,8 +23,8 @@ http.listen(3000, function(){
 
 
 
-
-var nickNames = new Map();
+var players = {};
+//var players = new Map(); 
 
 
 io.on('connection', function(socket){
@@ -32,8 +34,8 @@ io.on('connection', function(socket){
 	socket.on('chat message', function(msg){
 
 		
-		io.emit('chat message', nickNames.get(socket.id)  + ": " + msg);
-
+		//io.emit('chat message', players.get(socket.id).playerName  + ": " + msg);
+		io.emit('chat message', players[socket.id].playerName  + ": " + msg);
 		//io.emit('chat message', msg)
 	});
 
@@ -41,12 +43,21 @@ io.on('connection', function(socket){
 	socket.on('disconnect', function(){
 
 		//Frees up nickname from map only if it has been taken
-		if(nickNames.has(socket.id)){
+		/*if(players.has(socket.id)){
 
 
-			io.emit('disconnect', nickNames.get(socket.id), nickNames.size-1);
-		    nickNames.delete(socket.id);
+			io.emit('disconnect', players.get(socket.id).playerName, players.size-1); //This will be change to players.get(socket.id).nickname
+		    players.delete(socket.id);
+		}*/
+
+		if(socket.id in players){
+
+				//io.emit('disconnect', players[socket.id].playerName, players.size-1); //This will be change to players.get(socket.id).nickname
+				io.emit('disconnect', players[socket.id].playerName, Object.keys(players).length-1);
+				
+				delete players[socket.id];
 		}
+
 	 	
 		console.log(socket.id + 'a user disconnected');
 
@@ -61,18 +72,37 @@ io.on('connection', function(socket){
 		var taken = false;
 
 
-		//Check if nick is taken
-		for (var value of nickNames.values()) {
-		  if(value === nick){
+		//Check if nick is taken with map
+		/*for (var value of players.values()) {
+		  if(value.playerName === nick){
 		  		taken = true;
 		  }
-		}	
+		}*/	
+
+		for (var sock in players){
+		    if (players.hasOwnProperty(sock)){
+		      if(players[sock].playerName === nick){
+
+		        	taken = true;
+		        }
+		    }
+		      
+		}
+
+
 
 		if(!taken){
 			//check if nickname is taken. Emit to the socket only not all sockets.
-			nickNames.set(socket.id,nick);
-			io.emit('newNick', nick, nickNames.size); //emit which user connected.
+			//players.set(socket.id,nick); //Instead mapping socket.id to nickname. Map socket.id to a new player object that includes a nickname.
+			//players.set(socket.id,{playerName:nick});
+			players[socket.id] = {playerName:nick};
+
+			//io.emit('newNick', nick, players.size); //emit which user connected.
+			//io.emit('newNick', nick, Object.keys(players).length); 
+			io.emit('newNick', players[socket.id], Object.keys(players).length);
+			io.emit('test', players[socket.id], Object.keys(players).length); //added
 		}
+
 
 		socket.emit('nameTaken', taken); //Emit if the nickname was taken or not.
 

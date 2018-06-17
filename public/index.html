@@ -13,125 +13,25 @@
     <script src="https://code.jquery.com/jquery-3.3.1.min.js" integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8=" crossorigin="anonymous"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
-    <script type="text/javascript" src="clientScripts.js"></script>
+
+
 </head>
 <body>
+
 <script src="/socket.io/socket.io.js"></script>
-<!--<script src="https://code.jquery.com/jquery-1.11.1.js"></script>-->
+<script src="//cdn.jsdelivr.net/npm/phaser@3.10.1/dist/phaser.min.js"></script>
 
 
-<script>
 
-$(function(){	//document ready
+<!--<script src="game.js"></script>-->
 
-  var socket = io();
-  var connectionLogMax = 50;
-  var chatLogMax = 50;
-
-   $('#container').hide();
-   $('#nickError').hide();
-
- 
-
-  	$('#chat').submit(function(){
-
-      if($('#m').val().trim()!=""){
-    		socket.emit('chat message',$('#m').val());
-      }
-
-      $('#m').val('');
-
-  		return false;
-
-  	});
-
-
- 
-    $('#nickSubmit').submit(function(){
-
-      $('#nickError').hide();
-
-      var validated = /^[A-Z]+$/i.test($('#nickname').val().trim()); //Check if trimmed nickname only contains letters
-
-          
+<div id = "GAME">
   
-      if(validated){
+</div>
 
-        
-            socket.emit('nickname',$('#nickname').val());
-
-                 socket.on('nameTaken', function(taken){
-
-                      if(taken){
-                          $('#nickError').text("The nickname is taken");
-                          $('#nickError').show();
-                      }
-                      else{
-                        $('#nickError').hide();
-                        $('#nickSubmit').hide();
-                        $('#container').show();
-                      }
-                  });
-
-                 
+<div id = "TEST">
   
-      }
-      else{
-        $('#nickError').text("Nickname must only contain letters");
-        $('#nickError').show();
-      }
-
-        
-
-      $('#nickname').val('');
-     return false;
-    });
- 
-
-
-
-    //User chose nickname and connected
-    socket.on('newNick', function(nick, onlineCount){
-
-      $('#log').append($('<div>').text(nick + "  connected"));
-       $('#onlineCount').text(onlineCount + "  online");
-      chatUpdate('#log',connectionLogMax);
-    });
-
-    //on user disconnect
-    socket.on('disconnect', function(nick,onlineCount){
-
-
-      $('#log').append($('<div>').text(nick + "  disconnected"));
-       $('#onlineCount').text(onlineCount + "  online");
-      chatUpdate('#log',connectionLogMax);
-
-
-
-
-    });
-
-
-  	socket.on('chat message', function(msg){
-  	
-
-  			$('#chatLog').append($('<div class ="chatmessages">').text(msg));
-
-
-        chatUpdate('#chatLog',chatLogMax); //Entries in chat updated
-
-  	});
-
-  	
-        
-
-
-});
-</script>
-
-
-
-
+</div>
 
 <!-- hide once nick submitted -->
 <div class = "container-fluid ">
@@ -173,7 +73,7 @@ $(function(){	//document ready
    
 
 
-
+<script type="text/javascript" src="socketChat.js"></script>
 
 </body>
 </html>
