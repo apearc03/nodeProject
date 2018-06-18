@@ -16,7 +16,7 @@ var chatLogMax = 50;
 };
 
 var game = new Phaser.Game(config);*/
-var game = new Phaser.Game(800, 600, Phaser.AUTO, 'GAME', { preload: preload, create: create, update: update });
+var game = new Phaser.Game(document.body.offsetWidth, 600, Phaser.AUTO, 'GAME', { preload: preload, create: create, update: update });
 
 
 $(function(){	//document ready
@@ -68,13 +68,17 @@ $(function(){	//document ready
 
       $('#nickError').hide();
 
-      var validated = /^[A-Z]+$/i.test($('#nickname').val().trim()); //Check if trimmed nickname only contains letters
+
+      var trimmed = $('#nickname').val().trim();
+
+      var validated = /^[A-Z]+$/i.test(trimmed); //Check if trimmed nickname only contains letters
 
           
   
       if(validated){
 
-        
+        if(trimmed.length<10){
+
             socket.emit('nickname',$('#nickname').val());
 
                  socket.on('nameTaken', function(taken){
@@ -91,7 +95,10 @@ $(function(){	//document ready
                       }
                   });
 
-                 
+            }else{
+                $('#nickError').text("Nickname must be shorter than 10 characters");
+                $('#nickError').show();
+            }    
   
       }
       else{
@@ -187,6 +194,7 @@ $(function(){	//document ready
               leftKey = game.input.keyboard.addKey(Phaser.Keyboard.A);
 
 
+      //var style = { font: "30px Arial", fill: "#ffffff" };  
 
 
     
@@ -200,18 +208,19 @@ $(function(){	//document ready
             for (var sock in players){    
                   if (players.hasOwnProperty(sock)){
 
-                        connectedSprites[sock] = game.add.sprite(players[sock].x,200, 'ship');
+                        connectedSprites[sock] = game.add.sprite(players[sock].x,players[sock].y, 'ship');
+                        connectedSprites[sock].addChild(game.add.text(0-players[sock].playerName.length*3, -20, players[sock].playerName, { font: "15px Arial", fill: "#ffffff" }));
 
-
+                        //$('#TEST').append($('<div>').text(test.width/2));
                      }
                  }
                 firstConnection = true; 
             }
             else{
 
-                connectedSprites[newestPlayer.id] = game.add.sprite(players[newestPlayer.id].x,200, 'ship');
-
-
+                connectedSprites[newestPlayer.id] = game.add.sprite(players[newestPlayer.id].x,players[newestPlayer.id].y, 'ship');
+                connectedSprites[newestPlayer.id].addChild(game.add.text(0-players[newestPlayer.id].playerName.length*3, -20, players[newestPlayer.id].playerName, { font: "15px Arial", fill: "#ffffff" }));
+                //$('#TEST').append($('<div>').text(players[newestPlayer.id].playerName.length/2));
             }
 
 
@@ -229,21 +238,30 @@ $(function(){	//document ready
       });
 
 
-   
-    
+      socket.on('playerMoved', function(player){
+
+          connectedSprites[player.id].x = player.x;
+          connectedSprites[player.id].y = player.y;
+      });
+      
   
     }   
 
 
+    var moved = false;
 
    // game.create = function(){}
 
     function update() {
 
         
+
+
+
          if (leftKey.isDown) {
             if(connectedSprites[socket.id].x>0){
                    connectedSprites[socket.id].x-=10;
+                   moved = true;
             }
         
 
@@ -252,6 +270,7 @@ $(function(){	//document ready
         if (rightKey.isDown) {
           if(connectedSprites[socket.id].x<game.width-connectedSprites[socket.id].width){
                            connectedSprites[socket.id].x+=10;
+                      moved = true;    
             }
 
         }
@@ -259,6 +278,7 @@ $(function(){	//document ready
        if (upKey.isDown) {
                     if(connectedSprites[socket.id].y>0){
                            connectedSprites[socket.id].y-=10;
+                           moved = true;
                     }
 
         }
@@ -266,12 +286,17 @@ $(function(){	//document ready
          if (downKey.isDown) {
               if(connectedSprites[socket.id].y<game.height-connectedSprites[socket.id].height){
                            connectedSprites[socket.id].y+=10;
+                           moved = true;
                 }
 
         }
     
 
+          if(moved){
 
+            socket.emit('moved',connectedSprites[socket.id].x,connectedSprites[socket.id].y);
+            moved = false;
+          }
 
     }
 

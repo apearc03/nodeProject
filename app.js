@@ -97,7 +97,9 @@ io.on('connection', function(socket){
 			players[socket.id] = 
 			{playerName:nick,
 			id:socket.id,
-			x:Math.floor(Math.random() * 160) + 5};
+			x:250,
+			y:200
+			};
 
 
 			io.emit('newNick', players, players[socket.id]);
@@ -107,6 +109,14 @@ io.on('connection', function(socket){
 		socket.emit('nameTaken', taken); //Emit if the nickname was taken or not.
 
 
+	});
+
+
+	socket.on('moved',function(x,y){
+			
+			players[socket.id].x = x;
+			players[socket.id].y = y;
+			socket.broadcast.emit('playerMoved',players[socket.id]);
 	});
 
 
