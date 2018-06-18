@@ -3,7 +3,7 @@ var connectionLogMax = 50;
 var chatLogMax = 50;
 
 //phaser game initialization
-var config = {
+/*var config = {
   type: Phaser.AUTO,
   parent: 'GAME',
   width: document.body.offsetWidth,
@@ -15,8 +15,8 @@ var config = {
   } 
 };
 
-var game = new Phaser.Game(config);
-
+var game = new Phaser.Game(config);*/
+var game = new Phaser.Game(800, 600, Phaser.AUTO, 'GAME', { preload: preload, create: create, update: update });
 
 
 $(function(){	//document ready
@@ -25,11 +25,30 @@ $(function(){	//document ready
 
 //
 
-
+    $('#GAME').hide();
    $('#container').hide();
    $('#nickError').hide();
 
+
+      
+
+
+
  });
+
+    //input control between chat and game
+    $('#m').on("focus", function(){
+              game.input.enabled = false;
+        });
+      
+      $('#m').on("blur", function(){
+              game.input.enabled = true;
+        });
+
+         
+   
+
+
 
   	$('#chat').submit(function(){
 
@@ -68,6 +87,7 @@ $(function(){	//document ready
                         $('#nickError').hide();
                         $('#nickSubmit').hide();
                         $('#container').show();
+                        $('#GAME').show();
                       }
                   });
 
@@ -87,6 +107,7 @@ $(function(){	//document ready
  
 
 
+  
 
     //User chose nickname and connected
     /*socket.on('newNick', function(nick, onlineCount){
@@ -149,41 +170,47 @@ $(function(){	//document ready
   var firstConnection = false;
   var connectedSprites = {};
 
+ 
+   var upKey;
+  var downKey;
+  var rightKey;
+  var leftKey;
+
 
     function create() {
-      
 
-      var self = this;
-      //connectedPlayers = this.add.group();
+        game.input.enabled = false;
+
+              upKey = game.input.keyboard.addKey(Phaser.Keyboard.W);
+              downKey = game.input.keyboard.addKey(Phaser.Keyboard.S);
+              rightKey = game.input.keyboard.addKey(Phaser.Keyboard.D);
+              leftKey = game.input.keyboard.addKey(Phaser.Keyboard.A);
+
+
+
+
     
        socket.on('newNick', function(players, newestPlayer){
 
-        //var newPlayer = self.add.image(players[socket].x,200, 'ship'); //Need to only add the new ships to the group. Not the existing ones.
-        //newPlayer.id = sock;
-        //connectedPlayers.add(newPlayer);
+
+          game.input.enabled = true;
 
         if(!firstConnection){
 
             for (var sock in players){    
                   if (players.hasOwnProperty(sock)){
-                      /*var newPlayer = self.add.image(players[sock].x,200, 'ship'); //Need to only add the new ships to the group. Not the existing ones.
-                        newPlayer.playerID = sock;
-                        newPlayer.name = newestPlayer.playerName;
-                        connectedPlayers.add(newPlayer);*/
-                        connectedSprites[sock] = self.add.sprite(players[sock].x,200, 'ship');
+
+                        connectedSprites[sock] = game.add.sprite(players[sock].x,200, 'ship');
+
 
                      }
                  }
                 firstConnection = true; 
             }
             else{
-              /*
-                var newPlayer = self.add.image(players[newestPlayer.id].x,200, 'ship'); //Need to only add the new ships to the group. Not the existing ones.
-                newPlayer.playerID = newestPlayer.id;
-                newPlayer.name = newestPlayer.playerName;
-                connectedPlayers.add(newPlayer);
-                */
-                connectedSprites[newestPlayer.id] = self.add.sprite(players[newestPlayer.id].x,200, 'ship');
+
+                connectedSprites[newestPlayer.id] = game.add.sprite(players[newestPlayer.id].x,200, 'ship');
+
 
             }
 
@@ -192,25 +219,18 @@ $(function(){	//document ready
 
       });
 
+
        socket.on('disconnect', function(player,onlineCount){
 
 
           connectedSprites[player.id].destroy();
-       
-                 /*connectedPlayers.getChildren().forEach(function (otherPlayer) {
-                    if (player.id === otherPlayer.playerID) {
-                      //$('#TEST').append($('<div>').text(connectedPlayers.getByName(player.playerName).playerID));
-                       $('#TEST').append($('<div>').text(connectedPlayers.getChildren().getByName(player.playerName)));
-                      otherPlayer.destroy();
-
-                    }
-                  });  */   
               
                
       });
 
 
-
+   
+    
   
     }   
 
@@ -218,7 +238,42 @@ $(function(){	//document ready
 
    // game.create = function(){}
 
-    function update() {}
+    function update() {
+
+        
+         if (leftKey.isDown) {
+            if(connectedSprites[socket.id].x>0){
+                   connectedSprites[socket.id].x-=10;
+            }
+        
+
+        }
+        
+        if (rightKey.isDown) {
+          if(connectedSprites[socket.id].x<game.width-connectedSprites[socket.id].width){
+                           connectedSprites[socket.id].x+=10;
+            }
+
+        }
+    
+       if (upKey.isDown) {
+                    if(connectedSprites[socket.id].y>0){
+                           connectedSprites[socket.id].y-=10;
+                    }
+
+        }
+
+         if (downKey.isDown) {
+              if(connectedSprites[socket.id].y<game.height-connectedSprites[socket.id].height){
+                           connectedSprites[socket.id].y+=10;
+                }
+
+        }
+    
+
+
+
+    }
 
    // game.update = function(){ }
 
