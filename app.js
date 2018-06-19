@@ -113,11 +113,19 @@ io.on('connection', function(socket){
 
 
 	socket.on('moved',function(x,y){
+
 			
 			players[socket.id].x = x;
 			players[socket.id].y = y;
 			socket.broadcast.emit('playerMoved',players[socket.id]);
 	});
+
+
+
+	socket.on('bullet',function(bullet){
+
+			socket.broadcast.emit('bulletFromServ',bullet);
+	})
 
 
 

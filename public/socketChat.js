@@ -166,8 +166,8 @@ $(function(){	//document ready
 
      function preload() {
 
-        this.load.image('ship', 'assets/paddle.png');
-
+        game.load.image('ship', 'assets/paddle.png');
+        game.load.image('bulletSprite', 'assets/ball5.png');
      } 
 
    
@@ -176,27 +176,38 @@ $(function(){	//document ready
   //var connectedPlayers;
   var firstConnection = false;
   var connectedSprites = {};
-
+  var activeBullets = {};
  
+
    var upKey;
   var downKey;
   var rightKey;
   var leftKey;
 
 
-    function create() {
+
+  var fireRate;
+  var nextFire;
+
+    function create() {        
+
+        game.physics.startSystem(Phaser.Physics.ARCADE);
+
+  
+
+        fireRate = 300; //higher = slower
+        nextFire = 0;
 
         game.input.enabled = false;
 
-              upKey = game.input.keyboard.addKey(Phaser.Keyboard.W);
-              downKey = game.input.keyboard.addKey(Phaser.Keyboard.S);
-              rightKey = game.input.keyboard.addKey(Phaser.Keyboard.D);
-              leftKey = game.input.keyboard.addKey(Phaser.Keyboard.A);
+        upKey = game.input.keyboard.addKey(Phaser.Keyboard.W);
+        downKey = game.input.keyboard.addKey(Phaser.Keyboard.S);
+        rightKey = game.input.keyboard.addKey(Phaser.Keyboard.D);
+        leftKey = game.input.keyboard.addKey(Phaser.Keyboard.A);
 
 
-      //var style = { font: "30px Arial", fill: "#ffffff" };  
 
-
+  
     
        socket.on('newNick', function(players, newestPlayer){
 
@@ -210,7 +221,9 @@ $(function(){	//document ready
 
                         connectedSprites[sock] = game.add.sprite(players[sock].x,players[sock].y, 'ship');
                         connectedSprites[sock].addChild(game.add.text(0-players[sock].playerName.length*3, -20, players[sock].playerName, { font: "15px Arial", fill: "#ffffff" }));
+                        activeBullets[sock] = [];
 
+                         
                         //$('#TEST').append($('<div>').text(test.width/2));
                      }
                  }
@@ -221,8 +234,8 @@ $(function(){	//document ready
                 connectedSprites[newestPlayer.id] = game.add.sprite(players[newestPlayer.id].x,players[newestPlayer.id].y, 'ship');
                 connectedSprites[newestPlayer.id].addChild(game.add.text(0-players[newestPlayer.id].playerName.length*3, -20, players[newestPlayer.id].playerName, { font: "15px Arial", fill: "#ffffff" }));
                 //$('#TEST').append($('<div>').text(players[newestPlayer.id].playerName.length/2));
+                activeBullets[newestPlayer.id] = [];
             }
-
 
 
 
@@ -243,19 +256,46 @@ $(function(){	//document ready
           connectedSprites[player.id].x = player.x;
           connectedSprites[player.id].y = player.y;
       });
-      
+         
+
+      socket.on('bulletFromServ',function(bullet){
+          //it doesnt exist yet??
+          //activeBullets[bullet.id] = [];
+          activeBullets[bullet.id][bullet.num] = game.add.sprite(connectedSprites[bullet.id].x - 8,connectedSprites[bullet.id].y - 8, 'bulletSprite');
+          activeBullets[bullet.id][bullet.num].checkWorldBounds = true;
+          activeBullets[bullet.id][bullet.num].outOfBoundsKill = true;
+
+          game.physics.arcade.enable(activeBullets[bullet.id][bullet.num]);
+
+           //Possibly need new way to move bullets 
+          game.physics.arcade.moveToXY(activeBullets[bullet.id][bullet.num], bullet.xDest, bullet.yDest, 300);
+
+      });
+    
   
     }   
 
 
     var moved = false;
 
-   // game.create = function(){}
+   
 
     function update() {
 
-        
+           
+       
+        //Use something like this to  check bullet collision.
+        /*for (var te in connectedSprites){
+           for (var yo in connectedSprites){
+            if(te!==yo){
+              if(connectedSprites[te].overlap(connectedSprites[yo])){
+                  $('#TEST').append($('<div>').text("OVERLAPPING"));
+              }
+            }
+          
+          }
 
+        }*/
 
 
          if (leftKey.isDown) {
@@ -263,7 +303,6 @@ $(function(){	//document ready
                    connectedSprites[socket.id].x-=10;
                    moved = true;
             }
-        
 
         }
         
@@ -272,15 +311,13 @@ $(function(){	//document ready
                            connectedSprites[socket.id].x+=10;
                       moved = true;    
             }
-
         }
     
        if (upKey.isDown) {
-                    if(connectedSprites[socket.id].y>0){
+                   if(connectedSprites[socket.id].y>0){
                            connectedSprites[socket.id].y-=10;
                            moved = true;
                     }
-
         }
 
          if (downKey.isDown) {
@@ -288,10 +325,16 @@ $(function(){	//document ready
                            connectedSprites[socket.id].y+=10;
                            moved = true;
                 }
-
         }
     
 
+        if(game.input.activePointer.isDown){
+
+            fireBullet();
+       
+             
+        }
+       
           if(moved){
 
             socket.emit('moved',connectedSprites[socket.id].x,connectedSprites[socket.id].y);
@@ -299,6 +342,46 @@ $(function(){	//document ready
           }
 
     }
+
+
+
+  function fireBullet(){
+
+      if(game.time.now > nextFire){
+              
+
+
+              nextFire = game.time.now + fireRate;
+
+
+              activeBullets[socket.id].push(game.add.sprite(connectedSprites[socket.id].x - 8,connectedSprites[socket.id].y - 8, 'bulletSprite'));
+              activeBullets[socket.id][activeBullets[socket.id].length-1].checkWorldBounds = true;
+              activeBullets[socket.id][activeBullets[socket.id].length-1].outOfBoundsKill = true;
+
+              game.physics.arcade.enable(activeBullets[socket.id][activeBullets[socket.id].length-1]);
+
+              game.physics.arcade.moveToXY(activeBullets[socket.id][activeBullets[socket.id].length-1], game.input.mousePointer.x, game.input.mousePointer.y, 300);
+
+              socket.emit('bullet',
+              {id:socket.id,
+              x:activeBullets[socket.id][activeBullets[socket.id].length-1].x,
+              y:activeBullets[socket.id][activeBullets[socket.id].length-1].y,
+              xDest:game.input.mousePointer.x,
+              yDest:game.input.mousePointer.y,
+              num:activeBullets[socket.id].length-1
+              }); //think i need to emit object of single bullet here
+
+              //$('#TEST').prepend($('<div>').text(activeBullets[socket.id].length));  
+
+  
+
+
+
+          }    
+  }
+
+
+
 
    // game.update = function(){ }
 
