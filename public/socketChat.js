@@ -116,13 +116,7 @@ $(function(){	//document ready
 
   
 
-    //User chose nickname and connected
-    /*socket.on('newNick', function(nick, onlineCount){
-
-      $('#log').append($('<div>').text(nick + "  connected"));
-       $('#onlineCount').text(onlineCount + "  online");
-      chatUpdate('#log',connectionLogMax);
-    });*/
+  
 
     socket.on('newNick', function(players, player){
 
@@ -194,13 +188,16 @@ $(function(){	//document ready
 
   var cover;
 
-    function create() {        
+    function create(){        
 
         game.physics.startSystem(Phaser.Physics.ARCADE);
         game.stage.disableVisibilityChange = true;﻿
         game.input.enabled = false;
 
-        cover = game.add.sprite(200,200, 'cover');
+        cover = game.add.sprite(400,400, 'cover'); //make group of these.
+        game.physics.arcade.enable(cover);
+        cover.body.enable = true;
+        cover.body.immovable = true;
 
         bulletSpeed = 500;
         fireRate = 300; //higher = slower
@@ -217,9 +214,8 @@ $(function(){	//document ready
 
 
 
-  
     
-       socket.on('newNick', function(players, newestPlayer){
+      socket.on('newNick', function(players, newestPlayer){
 
 
           game.input.enabled = true;
@@ -232,7 +228,10 @@ $(function(){	//document ready
 
                         connectedSprites[sock] = game.add.sprite(players[sock].x,players[sock].y, 'ship');
                         connectedSprites[sock].addChild(game.add.text(0-players[sock].playerName.length*3, -20, players[sock].playerName, { font: "15px Arial", fill: "#ffffff" }));
-
+                        //
+                        game.physics.arcade.enable(connectedSprites[sock]);
+                        //connectedSprites[sock].body.enable = true;
+                        //
 
                         activeBullets[sock] = [];
 
@@ -247,9 +246,10 @@ $(function(){	//document ready
                 connectedSprites[newestPlayer.id] = game.add.sprite(players[newestPlayer.id].x,players[newestPlayer.id].y, 'ship');
                 connectedSprites[newestPlayer.id].addChild(game.add.text(0-players[newestPlayer.id].playerName.length*3, -20, players[newestPlayer.id].playerName, { font: "15px Arial", fill: "#ffffff" }));
                 //$('#TEST').append($('<div>').text(players[newestPlayer.id].playerName.length/2));
-
-
-
+                //  
+                game.physics.arcade.enable(connectedSprites[newestPlayer.id]);
+                //connectedSprites[newestPlayer.id].body.enable = true;
+                //
                 activeBullets[newestPlayer.id] = [];
             }
 
@@ -293,6 +293,10 @@ $(function(){	//document ready
 
           game.physics.arcade.enable(activeBullets[bullet.id][bullet.num]);
 
+          //added for collision
+          activeBullets[bullet.id][bullet.num].body.enable = true;
+
+          //
 
           game.physics.arcade.moveToXY(activeBullets[bullet.id][bullet.num], bullet.xDest, bullet.yDest, bulletSpeed);
 
@@ -302,31 +306,38 @@ $(function(){	//document ready
            connectedSprites[playerHit].x = respawnX;
            connectedSprites[playerHit].y = respawnY;
 
-           activeBullets[playerShooter][bulletID].destroy();
-          delete activeBullets[playerShooter][bulletID];
+
+           destroyBullet(playerShooter,bulletID);
+
+           //activeBullets[playerShooter][bulletID].destroy();
+          //delete activeBullets[playerShooter][bulletID];
           //move playerHIT to respawn.
           //destroy and delete bullets.
           //can increment playerShooter score later.
       });
     
-
-
-
-
     }   
 
 
-    var moved = false;
+   var moved = false;
 
-   
 
-    function update() {
+   /*if sprite movement fails. Use this variable for collision detection. Everytime the player moves. Fill these variables with the latest movement
+    If the sprite overlaps any of the covers. Apply the reverse of the last movements to place them back where they were before the overlap.
+   */
+   var lastXMovement;
+   var lastYMovement;
 
-     
+   function update() {
 
-           //game.physics.arcade.collide(cover, connectedSprites[socket.id]);
 
-  
+            //connectedSprites[socket.id].body.velocity.x = 0;
+            //connectedSprites[socket.id].body.velocity.y = 0;
+
+            //game.physics.arcade.collide(cover, connectedSprites[socket.id]);
+           // connectedSprites[socket.id].body.velocity.setTo(0, 0)﻿
+           
+
 
 
      
@@ -335,10 +346,12 @@ $(function(){	//document ready
           //Checking for any bullet collision against the client's player other than the client's own bullets.
           for(var id in activeBullets){
               for(var bullet in activeBullets[id]){
-                  //also have another if statement here? If the bullet is out of bounds. Destroy the sprite and remove from the array?
-                    if(BulletOutOfBounds(activeBullets[id][bullet])){
-                            activeBullets[id][bullet].destroy();
-                            delete activeBullets[id][bullet];
+
+                      if(game.physics.arcade.collide(cover, activeBullets[id][bullet])){ //Alter for when cover is part of a group
+                        destroyBullet(id,bullet);
+                      }
+                      else if(BulletOutOfBounds(activeBullets[id][bullet])){
+                            destroyBullet(id,bullet);
                             //$('#TEST').prepend($('<div>').text("BULLET DELETED"));
                       }
                       else{
@@ -347,8 +360,9 @@ $(function(){	//document ready
 
                                             socket.emit('collision', socket.id, id, bullet);
 
-                                            activeBullets[id][bullet].destroy();
-                                            delete activeBullets[id][bullet];
+                                            destroyBullet(id,bullet);  
+                                            //activeBullets[id][bullet].destroy();
+                                            //delete activeBullets[id][bullet];
                                             //$('#TEST').append($('<div>').text(activeBullets[id][bullet]));
                                             //$('#TEST').append($('<div>').text("OVERLAPPING"));
                                               connectedSprites[socket.id].x = respawnX;
@@ -367,11 +381,26 @@ $(function(){	//document ready
           }
 
 
+            //Overlap method for collision detection
+            if(game.physics﻿.arcade.overlap(cover, connectedSprites[socket.id])){
+                $('#TEST').append($('<div>').text("OVERLAPPING"));
+                connectedSprites[socket.id].x += lastXMovement;
+                connectedSprites[socket.id].y += lastYMovement;
+            }
+            else{
+            
+          
+
 
          if (leftKey.isDown) {
             if(connectedSprites[socket.id].x>0){
 
-                   connectedSprites[socket.id].x-=10;
+                          connectedSprites[socket.id].x-=10;
+                          moved = true; 
+                            lastXMovement = +10;
+                            lastYMovement = 0;
+        
+                   //connectedSprites[socket.id].body.velocity.x = -200;
                    moved = true;
             }
 
@@ -379,23 +408,43 @@ $(function(){	//document ready
         
         if (rightKey.isDown) {
           if(connectedSprites[socket.id].x<game.width-connectedSprites[socket.id].width){
-                           connectedSprites[socket.id].x+=10;
-                      moved = true;    
+
+                          connectedSprites[socket.id].x+=10;
+                          moved = true;
+                          lastXMovement = -10;
+                          lastYMovement = 0;
+                      //connectedSprites[socket.id].body.velocity.x = 200;
+                      //moved = true; 
+
             }
         }
     
+
        if (upKey.isDown) {
                    if(connectedSprites[socket.id].y>0){
-                           connectedSprites[socket.id].y-=10;
-                           moved = true;
+
+                          connectedSprites[socket.id].y-=10;
+                          moved = true; 
+                          lastXMovement = 0;
+                          lastYMovement = 10;
+                          //connectedSprites[socket.id].body.velocity.y = -200;
+                          //moved = true;
+
                     }
         }
 
+
          if (downKey.isDown) {
               if(connectedSprites[socket.id].y<game.height-connectedSprites[socket.id].height){
-                           connectedSprites[socket.id].y+=10;
-                           moved = true;
+
+                                  connectedSprites[socket.id].y+=10;
+                                  moved = true;
+                                  lastXMovement = 0;
+                                  lastYMovement = -10;
+                            //connectedSprites[socket.id].body.velocity.y = 200;
+                            //moved = true; 
                 }
+                //$('#TEST').prepend($('<div>').text(cover.getBounds()));
         }
     
 
@@ -409,7 +458,10 @@ $(function(){	//document ready
 
             socket.emit('moved',connectedSprites[socket.id].x,connectedSprites[socket.id].y);
             moved = false;
+  
+
           }
+      }
 
     }
 
@@ -432,6 +484,8 @@ $(function(){	//document ready
               activeBullets[socket.id][latestIndex].outOfBoundsKill = true;
 
               game.physics.arcade.enable(activeBullets[socket.id][latestIndex]);
+
+              //activeBullets[socket.id][latestIndex].body.enable = true;
 
               game.physics.arcade.moveToXY(activeBullets[socket.id][latestIndex], game.input.mousePointer.x, game.input.mousePointer.y, bulletSpeed);
 
@@ -490,3 +544,9 @@ $(function(){	//document ready
   }
 
 
+function destroyBullet(playerID, bulletID){
+
+    activeBullets[playerID][bulletID].destroy();
+    delete activeBullets[playerID][bulletID];
+
+}
