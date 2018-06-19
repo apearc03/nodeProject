@@ -193,7 +193,6 @@ $(function(){	//document ready
 
         game.physics.startSystem(Phaser.Physics.ARCADE);
 
-  
 
         fireRate = 300; //higher = slower
         nextFire = 0;
@@ -214,6 +213,7 @@ $(function(){	//document ready
 
           game.input.enabled = true;
 
+          //if this is the first connection add all existing players.
         if(!firstConnection){
 
             for (var sock in players){    
@@ -244,9 +244,20 @@ $(function(){	//document ready
 
        socket.on('disconnect', function(player,onlineCount){
 
+          //$('#TEST').append($('<div>').text(player.id));
+          //$('#TEST').append($('<div>').text(Object.keys(activeBullets[player.id]).length));
 
+          //destroys player
           connectedSprites[player.id].destroy();
-              
+          delete connectedSprites[player.id];
+          //destroys users bullets if they disconnect.
+          for(var bullet in activeBullets[player.id]){
+              activeBullets[player.id][bullet].destroy();
+          }
+          delete activeBullets[player.id];
+
+      
+             
                
       });
 
@@ -259,15 +270,14 @@ $(function(){	//document ready
          
 
       socket.on('bulletFromServ',function(bullet){
-          //it doesnt exist yet??
-          //activeBullets[bullet.id] = [];
+
           activeBullets[bullet.id][bullet.num] = game.add.sprite(connectedSprites[bullet.id].x - 8,connectedSprites[bullet.id].y - 8, 'bulletSprite');
           activeBullets[bullet.id][bullet.num].checkWorldBounds = true;
           activeBullets[bullet.id][bullet.num].outOfBoundsKill = true;
 
           game.physics.arcade.enable(activeBullets[bullet.id][bullet.num]);
 
-           //Possibly need new way to move bullets 
+
           game.physics.arcade.moveToXY(activeBullets[bullet.id][bullet.num], bullet.xDest, bullet.yDest, 300);
 
       });
@@ -283,19 +293,30 @@ $(function(){	//document ready
     function update() {
 
            
-       
-        //Use something like this to  check bullet collision.
-        /*for (var te in connectedSprites){
-           for (var yo in connectedSprites){
-            if(te!==yo){
-              if(connectedSprites[te].overlap(connectedSprites[yo])){
-                  $('#TEST').append($('<div>').text("OVERLAPPING"));
-              }
-            }
-          
+      
+
+          //Checking for any bullet collision against the client's player other than the client's own bullets.
+          for(var id in activeBullets){
+              for(var bullet in activeBullets[id]){
+                  //also have another if statement here? If the bullet is out of bounds. Destroy the sprite and remove from the array?
+                  // if(BulletOutOfBounds(activeBullets[id][bullet])){activeBullets[id][bullet].destroy();//Might need to still remove from array aswell?}
+                  if(id!=socket.id){
+                        if(activeBullets[id][bullet].overlap(connectedSprites[socket.id])){
+                            activeBullets[id][bullet].destroy();
+                            delete activeBullets[id][bullet];
+                            //$('#TEST').append($('<div>').text(activeBullets[id][bullet]));
+                            //$('#TEST').append($('<div>').text("OVERLAPPING"));
+                            //Destroy player. Later reduce hp.
+                            //Destroy bullets that collided
+                            //emit collision to server
+                        }
+                  }
+                 
+                }
+
+
           }
 
-        }*/
 
 
          if (leftKey.isDown) {
@@ -355,20 +376,23 @@ $(function(){	//document ready
 
 
               activeBullets[socket.id].push(game.add.sprite(connectedSprites[socket.id].x - 8,connectedSprites[socket.id].y - 8, 'bulletSprite'));
-              activeBullets[socket.id][activeBullets[socket.id].length-1].checkWorldBounds = true;
-              activeBullets[socket.id][activeBullets[socket.id].length-1].outOfBoundsKill = true;
 
-              game.physics.arcade.enable(activeBullets[socket.id][activeBullets[socket.id].length-1]);
+              var latestIndex = activeBullets[socket.id].length-1;
 
-              game.physics.arcade.moveToXY(activeBullets[socket.id][activeBullets[socket.id].length-1], game.input.mousePointer.x, game.input.mousePointer.y, 300);
+              activeBullets[socket.id][latestIndex].checkWorldBounds = true;
+              activeBullets[socket.id][latestIndex].outOfBoundsKill = true;
+
+              game.physics.arcade.enable(activeBullets[socket.id][latestIndex]);
+
+              game.physics.arcade.moveToXY(activeBullets[socket.id][latestIndex], game.input.mousePointer.x, game.input.mousePointer.y, 300);
 
               socket.emit('bullet',
               {id:socket.id,
-              x:activeBullets[socket.id][activeBullets[socket.id].length-1].x,
-              y:activeBullets[socket.id][activeBullets[socket.id].length-1].y,
+              x:activeBullets[socket.id][latestIndex].x,
+              y:activeBullets[socket.id][latestIndex].y,
               xDest:game.input.mousePointer.x,
               yDest:game.input.mousePointer.y,
-              num:activeBullets[socket.id].length-1
+              num:latestIndex
               }); //think i need to emit object of single bullet here
 
               //$('#TEST').prepend($('<div>').text(activeBullets[socket.id].length));  
@@ -402,5 +426,8 @@ $(function(){	//document ready
 
 
 
+  function BulletOutOfBounds(bullet){
 
+      //if bullet out of bounds on x or y axis, return true. Otherwise false
+  }
 
