@@ -128,6 +128,11 @@ io.on('connection', function(socket){
 	})
 
 
+	socket.on('collision', function(playerHit, playerShooter, bulletID){
+
+			socket.broadcast.emit('collisionFromServ',playerHit,playerShooter,bulletID);
+	})
+
 
 });
 
