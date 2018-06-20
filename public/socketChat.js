@@ -16,7 +16,7 @@ var chatLogMax = 50;
 };
 
 var game = new Phaser.Game(config);*/
-var game = new Phaser.Game(document.body.offsetWidth, 600, Phaser.AUTO, 'GAME', { preload: preload, create: create, update: update });
+var game = new Phaser.Game(1000, 600, Phaser.AUTO, 'GAME', { preload: preload, create: create, update: update });
 
 
 $(function(){	//document ready
@@ -162,7 +162,8 @@ $(function(){	//document ready
 
         game.load.image('ship', 'assets/paddle.png');
         game.load.image('bulletSprite', 'assets/ball5.png');
-        game.load.image('cover', 'assets/ball2.png');
+        game.load.image('cover', 'assets/paddleGreen.png');
+        game.load.image('gun', 'assets/paddleRotated.png');
      } 
 
    
@@ -187,6 +188,8 @@ $(function(){	//document ready
   var nextFire;
 
   var cover;
+  var cover2;
+  var coverGroup; //use this for hit detection with bullets and player
 
     function create(){        
 
@@ -194,10 +197,30 @@ $(function(){	//document ready
         game.stage.disableVisibilityChange = true;﻿
         game.input.enabled = false;
 
+        game.scale.pageAlignHorizontally = true;
+        game.scale.pageAlignVertically = true;
+        //game.scale.setScreenSize(true);
+
+
+        coverGroup = game.add.group();
         cover = game.add.sprite(400,400, 'cover'); //make group of these.
-        game.physics.arcade.enable(cover);
-        cover.body.enable = true;
-        cover.body.immovable = true;
+        //game.physics.arcade.enable(cover);d
+        //cover.body.enable = true;
+        //cover.body.immovable = true;
+
+        cover2 = game.add.sprite(300,300, 'cover'); //make group of these.
+       // game.physics.arcade.enable(cover2);
+        //cover2.body.enable = true;
+        //cover2.body.immovable = true;
+        coverGroup.physicsBodyType = Phaser.Physics.ARCADE;
+        coverGroup.enableBody = true;
+
+
+        coverGroup.add(cover);
+        coverGroup.add(cover2);
+
+        coverGroup.setAll('body.immovable', true);
+
 
         bulletSpeed = 500;
         fireRate = 300; //higher = slower
@@ -227,14 +250,15 @@ $(function(){	//document ready
                   if (players.hasOwnProperty(sock)){
 
                         connectedSprites[sock] = game.add.sprite(players[sock].x,players[sock].y, 'ship');
-                        connectedSprites[sock].addChild(game.add.text(0-players[sock].playerName.length*3, -20, players[sock].playerName, { font: "15px Arial", fill: "#ffffff" }));
+                        connectedSprites[sock].addChild(game.add.text(0-players[sock].playerName.length*3, -30, players[sock].playerName, { font: "15px Arial", fill: "#ffffff" })); 
+                        connectedSprites[sock].addChild(game.add.sprite(4,4, 'gun'));
+                        connectedSprites[sock].getChildAt(1).anchor.setTo(0.5, 0.5);
                         //
                         game.physics.arcade.enable(connectedSprites[sock]);
                         //connectedSprites[sock].body.enable = true;
                         //
 
                         activeBullets[sock] = [];
-
                          
                         //$('#TEST').append($('<div>').text(test.width/2));
                      }
@@ -244,7 +268,9 @@ $(function(){	//document ready
             else{
 
                 connectedSprites[newestPlayer.id] = game.add.sprite(players[newestPlayer.id].x,players[newestPlayer.id].y, 'ship');
-                connectedSprites[newestPlayer.id].addChild(game.add.text(0-players[newestPlayer.id].playerName.length*3, -20, players[newestPlayer.id].playerName, { font: "15px Arial", fill: "#ffffff" }));
+                connectedSprites[newestPlayer.id].addChild(game.add.text(0-players[newestPlayer.id].playerName.length*3, -30, players[newestPlayer.id].playerName, { font: "15px Arial", fill: "#ffffff" }));
+                connectedSprites[newestPlayer.id].addChild(game.add.sprite(4,4, 'gun'));
+                connectedSprites[newestPlayer.id].getChildAt(1).anchor.setTo(0.5, 0.5);
                 //$('#TEST').append($('<div>').text(players[newestPlayer.id].playerName.length/2));
                 //  
                 game.physics.arcade.enable(connectedSprites[newestPlayer.id]);
@@ -287,7 +313,7 @@ $(function(){	//document ready
 
       socket.on('bulletFromServ',function(bullet){
 
-          activeBullets[bullet.id][bullet.num] = game.add.sprite(connectedSprites[bullet.id].x - 8,connectedSprites[bullet.id].y - 8, 'bulletSprite');
+          activeBullets[bullet.id][bullet.num] = game.add.sprite(connectedSprites[bullet.id].x - 4,connectedSprites[bullet.id].y - 4, 'bulletSprite');
           activeBullets[bullet.id][bullet.num].checkWorldBounds = true;
           activeBullets[bullet.id][bullet.num].outOfBoundsKill = true;
 
@@ -327,8 +353,11 @@ $(function(){	//document ready
         if(firstConnection){
             connectedSprites[socket.id].body.velocity.x = 0;
             connectedSprites[socket.id].body.velocity.y = 0;
+            //$('#TEST').prepend($('<div>').text(connectedSprites[socket.id].getChildAt(1).height));
+            connectedSprites[socket.id].getChildAt(1).rotation = game.physics.arcade.angleToPointer(connectedSprites[socket.id]);
+            //connectedSprites[socket.id].rotation = game.physics.arcade.angleToPointer(connectedSprites[socket.id]);
           }
-          game.physics.arcade.collide(cover, connectedSprites[socket.id]);
+          game.physics.arcade.collide(coverGroup, connectedSprites[socket.id]);
 
            
 
@@ -341,7 +370,7 @@ $(function(){	//document ready
           for(var id in activeBullets){
               for(var bullet in activeBullets[id]){
 
-                      if(game.physics.arcade.collide(cover, activeBullets[id][bullet])){ //Alter for when cover is part of a group
+                      if(game.physics.arcade.collide(coverGroup, activeBullets[id][bullet])){ //Alter for when cover is part of a group
                         destroyBullet(id,bullet);
                       }
                       else if(BulletOutOfBounds(activeBullets[id][bullet])){
@@ -444,7 +473,7 @@ $(function(){	//document ready
               nextFire = game.time.now + fireRate;
 
 
-              activeBullets[socket.id].push(game.add.sprite(connectedSprites[socket.id].x - 8,connectedSprites[socket.id].y - 8, 'bulletSprite'));
+              activeBullets[socket.id].push(game.add.sprite(connectedSprites[socket.id].x - 4,connectedSprites[socket.id].y - 4, 'bulletSprite'));
 
               var latestIndex = activeBullets[socket.id].length-1;
 
