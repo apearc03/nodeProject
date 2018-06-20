@@ -162,7 +162,7 @@ $(function(){	//document ready
 
         game.load.image('ship', 'assets/paddle.png');
         game.load.image('bulletSprite', 'assets/ball5.png');
-        game.load.image('cover', 'assets/paddleGreen.png');
+        game.load.image('cover', 'assets/ball2.png');
      } 
 
    
@@ -322,20 +322,14 @@ $(function(){	//document ready
    var moved = false;
 
 
-   /*if sprite movement fails. Use this variable for collision detection. Everytime the player moves. Fill these variables with the latest movement
-    If the sprite overlaps any of the covers. Apply the reverse of the last movements to place them back where they were before the overlap.
-   */
-   var lastXMovement;
-   var lastYMovement;
-
    function update() {
 
+        if(firstConnection){
+            connectedSprites[socket.id].body.velocity.x = 0;
+            connectedSprites[socket.id].body.velocity.y = 0;
+          }
+          game.physics.arcade.collide(cover, connectedSprites[socket.id]);
 
-            //connectedSprites[socket.id].body.velocity.x = 0;
-            //connectedSprites[socket.id].body.velocity.y = 0;
-
-            //game.physics.arcade.collide(cover, connectedSprites[socket.id]);
-           // connectedSprites[socket.id].body.velocity.setTo(0, 0)﻿
            
 
 
@@ -380,14 +374,6 @@ $(function(){	//document ready
 
           }
 
-
-            //Overlap method for collision detection
-            if(game.physics﻿.arcade.overlap(cover, connectedSprites[socket.id])){
-                $('#TEST').append($('<div>').text("OVERLAPPING"));
-                connectedSprites[socket.id].x += lastXMovement;
-                connectedSprites[socket.id].y += lastYMovement;
-            }
-            else{
             
           
 
@@ -395,12 +381,7 @@ $(function(){	//document ready
          if (leftKey.isDown) {
             if(connectedSprites[socket.id].x>0){
 
-                          connectedSprites[socket.id].x-=10;
-                          moved = true; 
-                            lastXMovement = +10;
-                            lastYMovement = 0;
-        
-                   //connectedSprites[socket.id].body.velocity.x = -200;
+                   connectedSprites[socket.id].body.velocity.x = -200;
                    moved = true;
             }
 
@@ -409,12 +390,8 @@ $(function(){	//document ready
         if (rightKey.isDown) {
           if(connectedSprites[socket.id].x<game.width-connectedSprites[socket.id].width){
 
-                          connectedSprites[socket.id].x+=10;
-                          moved = true;
-                          lastXMovement = -10;
-                          lastYMovement = 0;
-                      //connectedSprites[socket.id].body.velocity.x = 200;
-                      //moved = true; 
+                      connectedSprites[socket.id].body.velocity.x = 200;
+                      moved = true; 
 
             }
         }
@@ -422,13 +399,8 @@ $(function(){	//document ready
 
        if (upKey.isDown) {
                    if(connectedSprites[socket.id].y>0){
-
-                          connectedSprites[socket.id].y-=10;
-                          moved = true; 
-                          lastXMovement = 0;
-                          lastYMovement = 10;
-                          //connectedSprites[socket.id].body.velocity.y = -200;
-                          //moved = true;
+                          connectedSprites[socket.id].body.velocity.y = -200;
+                          moved = true;
 
                     }
         }
@@ -437,12 +409,8 @@ $(function(){	//document ready
          if (downKey.isDown) {
               if(connectedSprites[socket.id].y<game.height-connectedSprites[socket.id].height){
 
-                                  connectedSprites[socket.id].y+=10;
-                                  moved = true;
-                                  lastXMovement = 0;
-                                  lastYMovement = -10;
-                            //connectedSprites[socket.id].body.velocity.y = 200;
-                            //moved = true; 
+                            connectedSprites[socket.id].body.velocity.y = 200;
+                            moved = true; 
                 }
                 //$('#TEST').prepend($('<div>').text(cover.getBounds()));
         }
@@ -461,7 +429,7 @@ $(function(){	//document ready
   
 
           }
-      }
+   
 
     }
 
@@ -510,7 +478,6 @@ $(function(){	//document ready
 
 
 
-   // game.update = function(){ }
 
     //CHAT UPDATE
 
@@ -525,7 +492,7 @@ $(function(){	//document ready
 
 
 
-//});
+
 
 
 
