@@ -128,7 +128,7 @@ var game = new Phaser.Game(1300, 600, Phaser.AUTO, 'GAME', { preload: preload, c
 
       });
 
-
+      
        socket.on('disconnect', function(player,onlineCount){
 
           //$('#TEST').append($('<div>').text(player.id));
@@ -230,7 +230,7 @@ var game = new Phaser.Game(1300, 600, Phaser.AUTO, 'GAME', { preload: preload, c
            
 
 
-          }
+         
           game.physics.arcade.collide(coverGroup, connectedSprites[socket.id]);
 
            
@@ -255,9 +255,11 @@ var game = new Phaser.Game(1300, 600, Phaser.AUTO, 'GAME', { preload: preload, c
                                     if(id!==socket.id){
                                         //if(activeBullets[id][bullet].overlap(connectedSprites[socket.id])){
                                         	if(game.physics.arcade.collide(activeBullets[id][bullet], connectedSprites[socket.id])){
+                                        		destroyBullet(id,bullet);
+
                                             	socket.emit('collision', socket.id, id, bullet);
 
-                                            	destroyBullet(id,bullet);  
+              
                                             //activeBullets[id][bullet].destroy();
                                             //delete activeBullets[id][bullet];
                                             //$('#TEST').append($('<div>').text(activeBullets[id][bullet]));
@@ -324,17 +326,18 @@ var game = new Phaser.Game(1300, 600, Phaser.AUTO, 'GAME', { preload: preload, c
             fireBullet();
              
         }
-       
+       	socket.emit('moved',connectedSprites[socket.id].x,connectedSprites[socket.id].y);
+          
           if(moved){
 
-            socket.emit('moved',connectedSprites[socket.id].x,connectedSprites[socket.id].y);
+            //socket.emit('moved',connectedSprites[socket.id].x,connectedSprites[socket.id].y);
             moved = false;
   
 
           }
-   
+   	}
 
-    }
+ }
 
 
 
