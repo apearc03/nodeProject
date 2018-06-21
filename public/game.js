@@ -253,17 +253,17 @@ var game = new Phaser.Game(1300, 600, Phaser.AUTO, 'GAME', { preload: preload, c
                       }
                       else{
                                     if(id!==socket.id){
-                                        if(activeBullets[id][bullet].overlap(connectedSprites[socket.id])){
+                                        //if(activeBullets[id][bullet].overlap(connectedSprites[socket.id])){
+                                        	if(game.physics.arcade.collide(activeBullets[id][bullet], connectedSprites[socket.id])){
+                                            	socket.emit('collision', socket.id, id, bullet);
 
-                                            socket.emit('collision', socket.id, id, bullet);
-
-                                            destroyBullet(id,bullet);  
+                                            	destroyBullet(id,bullet);  
                                             //activeBullets[id][bullet].destroy();
                                             //delete activeBullets[id][bullet];
                                             //$('#TEST').append($('<div>').text(activeBullets[id][bullet]));
                                             //$('#TEST').append($('<div>').text("OVERLAPPING"));
-                                              connectedSprites[socket.id].x = respawnX;
-                                              connectedSprites[socket.id].y = respawnY;
+                                              	connectedSprites[socket.id].x = respawnX;
+                                              	connectedSprites[socket.id].y = respawnY;
                                             //Destroy player. Later reduce hp.
                                             //emit collision to server
   
