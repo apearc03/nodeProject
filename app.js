@@ -1,6 +1,7 @@
 
 
 var app = require('express')();
+//var app = express();
 var express= require('express');
 var http = require('http').Server(app);
 var io = require('socket.io')(http);
@@ -17,7 +18,7 @@ app.get('/',function(req,res){
 });
 
 
-http.listen(3000, function(){
+http.listen(8080, function(){
 	console.log("App running on port 3000");
 });
 
@@ -133,6 +134,13 @@ io.on('connection', function(socket){
 			socket.broadcast.emit('collisionFromServ',playerHit,playerShooter,bulletID);
 	})
 
+
+	
+	socket.on('turretRotation', function(player, x,y){
+		
+
+			socket.broadcast.emit('turretRotated',player,x,y);
+	})
 
 });
 

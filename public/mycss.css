@@ -2,7 +2,7 @@
 /*Position chat with this container*/
 #container{
 
-	padding-top: 100px;
+	padding-top: 50px;
 	padding-bottom: 20px;
 }
 
@@ -71,5 +71,6 @@
 
 #GAME{
 	padding-top:50px;
-	/*padding-bottom:100px;*/
 }
+
+

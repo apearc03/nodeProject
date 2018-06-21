@@ -1,0 +1,33 @@
+{
+  "name": "node-tank-game",
+  "version": "1.0.0",
+  "description": "First node project",
+  "main": "app.js",
+  "dependencies": {
+    "express": "^4.16.3",
+    "phaser": "^2.6.2",
+    "socket.io": "^2.1.1"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "start": "app.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/apearc03/nodeProject.git"
+  },
+  "keywords": [
+    "node",
+    "tank",
+    "game"
+  ],
+  "author": "Alex Pearce",
+  "license": "ISC",
+  "engines": {
+    "node": "9.8.0"
+  },
+  "bugs": {
+    "url": "https://github.com/apearc03/nodeProject/issues"
+  },
+  "homepage": "https://github.com/apearc03/nodeProject#readme"
+}
