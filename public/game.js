@@ -326,11 +326,10 @@ var game = new Phaser.Game(1300, 600, Phaser.AUTO, 'GAME', { preload: preload, c
             fireBullet();
              
         }
-       	socket.emit('moved',connectedSprites[socket.id].x,connectedSprites[socket.id].y);
-          
+       
           if(moved){
 
-            //socket.emit('moved',connectedSprites[socket.id].x,connectedSprites[socket.id].y);
+            socket.emit('moved',connectedSprites[socket.id].x,connectedSprites[socket.id].y);
             moved = false;
   
 
