@@ -7,7 +7,7 @@ var http = require('http').Server(app);
 var io = require('socket.io')(http);
 
 
-
+var port= Number(process.env.PORT || 3000);
 
 app.use(express.static(__dirname + '/public'));
 
@@ -18,7 +18,7 @@ app.get('/',function(req,res){
 });
 
 
-http.listen(8080, function(){
+http.listen(port, function(){
 	console.log("App running on port 3000");
 });
 
