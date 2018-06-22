@@ -12,14 +12,14 @@ var game = new Phaser.Game(1300, 600, Phaser.AUTO, 'GAME', { preload: preload, c
 
         game.load.image('ship', 'assets/tankNON.png');
         game.load.image('bulletSprite', 'assets/ball5.png');
-        game.load.image('cover', 'assets/wallVertical.png');
+        game.load.image('verticalWall', 'assets/wallVertical.png');
         game.load.image('gun2', 'assets/turretNON.png');
         game.load.image('background', 'assets/grass.jpg');
-        game.load.image('wall', 'assets/wall.png');
+        game.load.image('horizontalWall', 'assets/wall.png');
+        game.load.image('horizontalWallLarge', 'assets/largeWallHorizontal.png');
         game.load.image('box', 'assets/box.png');
-        game.load.image('largeWall', 'assets/largeWall.png');
+        game.load.image('verticalWallLarge', 'assets/largeWall.png');
         game.load.image('rock', 'assets/rock.png');
-        //game.load.spritesheet('explosion', 'assets/exp.png', 1, 8,12,16);
         game.load.atlasJSONHash('explosion', 'assets/explosion.png', 'assets/explosion.json');
      } 
 
@@ -27,7 +27,7 @@ var game = new Phaser.Game(1300, 600, Phaser.AUTO, 'GAME', { preload: preload, c
     
 
   //var connectedPlayers;
-  var firstConnection = false;
+  var firstConnection;
   var connectedSprites = {};
   var activeBullets = {};
   var bulletAllowance; //How far out of bounds a bullet can be before being destroyed
@@ -50,57 +50,65 @@ var game = new Phaser.Game(1300, 600, Phaser.AUTO, 'GAME', { preload: preload, c
 
     function create(){        
 
-
-
-        game.physics.startSystem(Phaser.Physics.ARCADE);
-        game.stage.disableVisibilityChange = true;﻿
-        game.input.enabled = false;
-
-        game.scale.pageAlignHorizontally = true;
-       	//game.scale.pageAlignVertically = true; //might not needas
-       	//game.scale.refresh();
-       	game.add.tileSprite(0,0,1300,600, 'background');
-
-
-        coverGroup = game.add.group();
-
-        coverGroup.physicsBodyType = Phaser.Physics.ARCADE;
-        coverGroup.enableBody = true;
-
-
-        coverGroup.add(game.add.sprite(400,250, 'wall'));
-        coverGroup.add(game.add.sprite(400,400, 'cover'));
-        coverGroup.add(game.add.sprite(200,500, 'box'));
-        coverGroup.add(game.add.sprite(550,100, 'largeWall'));
-        coverGroup.add(game.add.sprite(100,320, 'rock'));
-
-
-        coverGroup.setAll('body.immovable', true);
-
-
-        bulletSpeed = 500;
-        fireRate = 300; //higher = slower
-        nextFire = 0;
-        bulletAllowance = 20;
-
-        respawnX = 40;
-        respawnY = 40;
-
-        upKey = game.input.keyboard.addKey(Phaser.Keyboard.W);
-        downKey = game.input.keyboard.addKey(Phaser.Keyboard.S);
-        rightKey = game.input.keyboard.addKey(Phaser.Keyboard.D);
-        leftKey = game.input.keyboard.addKey(Phaser.Keyboard.A);
-
+        firstConnection = false;
 
 
     
       socket.on('newNick', function(players, newestPlayer){
 
+     
+
+          //if this is the first connection add all existing players.
+        if(!firstConnection){ 
+
+
+
+               game.physics.startSystem(Phaser.Physics.ARCADE);
+              game.stage.disableVisibilityChange = true;﻿
+              game.input.enabled = false;
+
+              game.scale.pageAlignHorizontally = true;
+              //game.scale.pageAlignVertically = true; //might not needas
+              //game.scale.refresh();
+              game.add.tileSprite(0,0,1300,600, 'background');
+
+
+              coverGroup = game.add.group();
+
+              coverGroup.physicsBodyType = Phaser.Physics.ARCADE;
+              coverGroup.enableBody = true;
+
+
+              coverGroup.add(game.add.sprite(400,250, 'verticalWall'));
+              coverGroup.add(game.add.sprite(400,250, 'verticalWallLarge'));
+              coverGroup.add(game.add.sprite(500,75, 'verticalWallLarge'));
+              coverGroup.add(game.add.sprite(200,450, 'box'));
+              coverGroup.add(game.add.sprite(0,100, 'horizontalWall'));
+              coverGroup.add(game.add.sprite(50,100, 'horizontalWallLarge'));
+              coverGroup.add(game.add.sprite(100,320, 'rock'));
+
+              //firstConnection = false; //needs to be false
+
+              coverGroup.setAll('body.immovable', true);
+
+
+              bulletSpeed = 500;
+              fireRate = 300; //higher = slower
+              nextFire = 0;
+              bulletAllowance = 20;
+
+              respawnX = 40;
+              respawnY = 40;
+
+              upKey = game.input.keyboard.addKey(Phaser.Keyboard.W);
+              downKey = game.input.keyboard.addKey(Phaser.Keyboard.S);
+              rightKey = game.input.keyboard.addKey(Phaser.Keyboard.D);
+              leftKey = game.input.keyboard.addKey(Phaser.Keyboard.A);
+
+
 
           game.input.enabled = true;
 
-          //if this is the first connection add all existing players.
-        if(!firstConnection){
 
             for (var sock in players){    
                   if (players.hasOwnProperty(sock)){
@@ -242,7 +250,7 @@ var game = new Phaser.Game(1300, 600, Phaser.AUTO, 'GAME', { preload: preload, c
             }
 
            
-          } //Change to bottom. This might fix bug
+
 
          
           game.physics.arcade.collide(coverGroup, connectedSprites[socket.id]);
@@ -348,7 +356,7 @@ var game = new Phaser.Game(1300, 600, Phaser.AUTO, 'GAME', { preload: preload, c
   
 
           }
-   //	}
+   	}
 
  }
 

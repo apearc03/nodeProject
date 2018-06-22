@@ -3,7 +3,7 @@
 <html>
 <head>
 	<title>Tank Arena</title>
-  <link rel="icon" type="image/gif/png" href="assets/AP.png">
+  <link rel="icon" href="assets/AP.png">
 	  
      
 
@@ -25,7 +25,7 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/phaser/2.6.2/phaser.min.js"></script>
 
 <div>
-  Built by Alex Pearce. <a href = "http://alexpearce.info" alt = "APwebsite">alexpearce.info</a>. Source code <a href = "https://github.com/apearc03/nodeProject" alt = "sourceCode">here</a>.
+  Built by Alex Pearce. <a href = "http://alexpearce.info" >alexpearce.info</a>. Source code <a href = "https://github.com/apearc03/nodeProject" >here</a>.
 </div>
 
   <div id = "GAME">
@@ -40,17 +40,55 @@
 
 <div class = "container-fluid" id = "main">
   <div id = "heading">
-    <h1>Tank arena</h1>
+    <h1>Multiplayer Tank Arena</h1>
   </div>
-
-  <form id = "nickSubmit" action="">
-      <input id="nickname" autocomplete="off" maxlength="100"/><button>Send nickname</button>
+  <img src = "assets/tank.png" alt ="introTanks" width = 150 height = 150>
+  <form id = "nickSubmit" action="send">
+      Choose your nickname
+      <input id="nickname" autocomplete="off" maxlength="100"/><button>Send</button>
   </form>
   <div id = "nickError">
     
   </div>
   <div id = "controls">
-    
+
+        <div>
+          Move Up
+        </div>
+        <div>
+          <img src = "assets/w.png" alt = "Wkey"width = 40 height = 40>
+        </div>
+         <div>
+          Move Left
+        </div>
+        <div>
+          <img src = "assets/A.png" alt = "Akey" width = 40 height = 40>
+        </div>
+         <div>
+          Move Down
+        </div>
+        <div>
+          <img src = "assets/S.png" alt = "Skey" width = 40 height = 40>
+        </div>
+         <div>
+          Move Right
+        </div>
+        <div>
+          <img src = "assets/D.png" alt = "Dkey" width = 40 height = 40>
+        </div>
+
+
+         <div>
+          Shoot
+        </div>
+        <div>
+          <img src = "assets/leftClick.png" alt = "leftClick" width = 40 height = 60>
+        </div>
+
+  </div>
+  <div id = "credit">
+    <p>Built with <a href = "http://alexpearce.info" >Node.js</a>, <a href = "http://alexpearce.info" >Socket.io</a> and <a href = "http://alexpearce.info" >Phaser</a>.</p>
+    <p>Hosted with <a href = "http://alexpearce.info" >Heroku</a>.</p>
   </div>
 </div>
 
@@ -67,7 +105,7 @@
        <div id="chatLog">
           <!-- Chat log -->
         </div>
-        <form id = "chat" action="">
+        <form id = "chat" action="send">
             <input id="m" autocomplete="off" maxlength="100"/><button>Send</button>
         </form>
       </div>

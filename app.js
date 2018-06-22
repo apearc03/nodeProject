@@ -24,6 +24,7 @@ http.listen(port, function(){
 
 
 var players = {};
+var game = 'game';
 //var players = new Map(); 
 
 
@@ -101,8 +102,10 @@ io.on('connection', function(socket){
 			y:40
 			};
 
-
-			io.emit('newNick', players, players[socket.id]);
+			socket.join(game);
+			//newNick client code called before the player is connected
+			io.in('game').emit('newNick', players, players[socket.id]);
+			//io.emit('newNick', players, players[socket.id]);
 		}
 
 
