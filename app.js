@@ -120,20 +120,23 @@ io.on('connection', function(socket){
 			
 			players[socket.id].x = x;
 			players[socket.id].y = y;
-			socket.broadcast.emit('playerMoved',players[socket.id]);
+			//socket.broadcast.emit('playerMoved',players[socket.id]);
+			socket.to('game').emit('playerMoved', players[socket.id]);
 	});
 
 
 
 	socket.on('bullet',function(bullet){
 
-			socket.broadcast.emit('bulletFromServ',bullet);
+			//socket.broadcast.emit('bulletFromServ',bullet);
+			socket.to('game').emit('bulletFromServ', bullet);
 	})
 
 
 	socket.on('collision', function(playerHit, playerShooter, bulletID){
 
-			socket.broadcast.emit('collisionFromServ',playerHit,playerShooter,bulletID);
+			//socket.broadcast.emit('collisionFromServ',playerHit,playerShooter,bulletID);
+			socket.to('game').emit('collisionFromServ',playerHit,playerShooter,bulletID);
 	})
 
 
@@ -141,7 +144,8 @@ io.on('connection', function(socket){
 	socket.on('turretRotation', function(player, x,y){
 		
 
-			socket.broadcast.emit('turretRotated',player,x,y);
+			//socket.broadcast.emit('turretRotated',player,x,y);
+			socket.to('game').emit('turretRotated',player,x,y);
 	})
 
 });
