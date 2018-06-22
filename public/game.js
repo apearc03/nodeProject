@@ -12,9 +12,15 @@ var game = new Phaser.Game(1300, 600, Phaser.AUTO, 'GAME', { preload: preload, c
 
         game.load.image('ship', 'assets/tankNON.png');
         game.load.image('bulletSprite', 'assets/ball5.png');
-        game.load.image('cover', 'assets/paddleGreen.png');
-        game.load.image('gun', 'assets/paddleRotated.png');
+        game.load.image('cover', 'assets/wallVertical.png');
         game.load.image('gun2', 'assets/turretNON.png');
+        game.load.image('background', 'assets/grass.jpg');
+        game.load.image('wall', 'assets/wall.png');
+        game.load.image('box', 'assets/box.png');
+        game.load.image('largeWall', 'assets/largeWall.png');
+        game.load.image('rock', 'assets/rock.png');
+        //game.load.spritesheet('explosion', 'assets/exp.png', 1, 8,12,16);
+        game.load.atlasJSONHash('explosion', 'assets/explosion.png', 'assets/explosion.json');
      } 
 
    
@@ -38,11 +44,13 @@ var game = new Phaser.Game(1300, 600, Phaser.AUTO, 'GAME', { preload: preload, c
   var fireRate;
   var nextFire;
 
-  var cover;
-  var cover2;
   var coverGroup; //use this for hit detection with bullets and player
 
+  var explosion;
+
     function create(){        
+
+
 
         game.physics.startSystem(Phaser.Physics.ARCADE);
         game.stage.disableVisibilityChange = true;﻿
@@ -51,18 +59,21 @@ var game = new Phaser.Game(1300, 600, Phaser.AUTO, 'GAME', { preload: preload, c
         game.scale.pageAlignHorizontally = true;
        	//game.scale.pageAlignVertically = true; //might not needas
        	//game.scale.refresh();
+       	game.add.tileSprite(0,0,1300,600, 'background');
 
 
         coverGroup = game.add.group();
-        cover = game.add.sprite(400,400, 'cover'); //make group of these.
-        cover2 = game.add.sprite(300,300, 'cover'); //make group of these.
 
         coverGroup.physicsBodyType = Phaser.Physics.ARCADE;
         coverGroup.enableBody = true;
 
 
-        coverGroup.add(cover);
-        coverGroup.add(cover2);
+        coverGroup.add(game.add.sprite(400,250, 'wall'));
+        coverGroup.add(game.add.sprite(400,400, 'cover'));
+        coverGroup.add(game.add.sprite(200,500, 'box'));
+        coverGroup.add(game.add.sprite(550,100, 'largeWall'));
+        coverGroup.add(game.add.sprite(100,320, 'rock'));
+
 
         coverGroup.setAll('body.immovable', true);
 
@@ -72,8 +83,8 @@ var game = new Phaser.Game(1300, 600, Phaser.AUTO, 'GAME', { preload: preload, c
         nextFire = 0;
         bulletAllowance = 20;
 
-        respawnX = 20;
-        respawnY = 20;
+        respawnX = 40;
+        respawnY = 40;
 
         upKey = game.input.keyboard.addKey(Phaser.Keyboard.W);
         downKey = game.input.keyboard.addKey(Phaser.Keyboard.S);
@@ -160,8 +171,9 @@ var game = new Phaser.Game(1300, 600, Phaser.AUTO, 'GAME', { preload: preload, c
 
           activeBullets[bullet.id][bullet.num] = game.add.sprite(connectedSprites[bullet.id].x + connectedSprites[bullet.id].width/2,connectedSprites[bullet.id].y + connectedSprites[bullet.id].height/2, 'bulletSprite');
           //activeBullets[bullet.id][bullet.num] = game.add.sprite(connectedSprites[bullet.id].getChildAt(1).x,connectedSprites[bullet.id].getChildAt(1).y, 'bulletSprite');
-          activeBullets[bullet.id][bullet.num].checkWorldBounds = true;
-          activeBullets[bullet.id][bullet.num].outOfBoundsKill = true;
+          //activeBullets[bullet.id][bullet.num].checkWorldBounds = true;
+          //activeBullets[bullet.id][bullet.num].outOfBoundsKill = true;
+          activeBullets[bullet.id][bullet.num].moveDown();
 
           game.physics.arcade.enable(activeBullets[bullet.id][bullet.num]);
 
@@ -176,6 +188,9 @@ var game = new Phaser.Game(1300, 600, Phaser.AUTO, 'GAME', { preload: preload, c
       });
     
       socket.on('collisionFromServ',function(playerHit, playerShooter, bulletID){
+
+      		playExplosion(connectedSprites[playerHit].x, connectedSprites[playerHit].y);
+
            connectedSprites[playerHit].x = respawnX;
            connectedSprites[playerHit].y = respawnY;
 
@@ -259,7 +274,7 @@ var game = new Phaser.Game(1300, 600, Phaser.AUTO, 'GAME', { preload: preload, c
 
                                             	socket.emit('collision', socket.id, id, bullet);
 
-              
+              									playExplosion(connectedSprites[socket.id].x, connectedSprites[socket.id].y);
                                             //activeBullets[id][bullet].destroy();
                                             //delete activeBullets[id][bullet];
                                             //$('#TEST').append($('<div>').text(activeBullets[id][bullet]));
@@ -350,20 +365,22 @@ var game = new Phaser.Game(1300, 600, Phaser.AUTO, 'GAME', { preload: preload, c
 
 
               //activeBullets[socket.id].push(game.add.sprite(connectedSprites[socket.id].x - 4,connectedSprites[socket.id].y - 4, 'bulletSprite'));
-              //Kinda works, new method.
+              //Kinda works.
              // var gunAngle = connectedSprites[socket.id].getChildAt(1).angle + connectedSprites[socket.id].angle;
               //var p = new Phaser.Point(connectedSprites[socket.id].x, connectedSprites[socket.id].y); 
               //p2 = p.rotate(connectedSprites[socket.id].x, connectedSprites[socket.id].y, gunAngle, true, 25);
              // activeBullets[socket.id].push(game.add.sprite(p2.x,p2.y, 'bulletSprite'));
 
-              //
-              //Old method
+              
+              //Workin method
               activeBullets[socket.id].push(game.add.sprite(connectedSprites[socket.id].x+connectedSprites[socket.id].width/2,connectedSprites[socket.id].y+connectedSprites[socket.id].height/2, 'bulletSprite'));
+
 
               var latestIndex = activeBullets[socket.id].length-1;
 
-              activeBullets[socket.id][latestIndex].checkWorldBounds = true;
-              activeBullets[socket.id][latestIndex].outOfBoundsKill = true;
+              //activeBullets[socket.id][latestIndex].checkWorldBounds = true;
+              //activeBullets[socket.id][latestIndex].outOfBoundsKill = true;
+              activeBullets[socket.id][latestIndex].moveDown();
 
               game.physics.arcade.enable(activeBullets[socket.id][latestIndex]);
 
@@ -409,4 +426,10 @@ function destroyBullet(playerID, bulletID){
     activeBullets[playerID][bulletID].destroy();
     delete activeBullets[playerID][bulletID];
 
+}
+
+function playExplosion(x,y){
+		explosion = game.add.sprite(x,y, 'explosion', 'explosion0001.png');
+      	explosion.animations.add('explode', Phaser.Animation.generateFrameNames('explosion', 1, 3,'.png', 4), 10, false, false);
+        explosion﻿.animations.play('explode', 5, false, true);
 }

@@ -98,8 +98,8 @@ io.on('connection', function(socket){
 			players[socket.id] = 
 			{playerName:nick,
 			id:socket.id,
-			x:250,
-			y:200
+			x:40,
+			y:40
 			};
 
 
