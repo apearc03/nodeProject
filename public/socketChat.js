@@ -73,7 +73,8 @@ $(function(){	//document ready
                       }
                       else{
                         $('#nickError').hide();
-                        $('#nickSubmit').hide();
+                        //$('#nickSubmit').hide();
+                        $('#main').hide();
                         $('#container').show();
                         $('#GAME').show();
                       }

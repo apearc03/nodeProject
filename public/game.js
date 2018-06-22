@@ -242,7 +242,7 @@ var game = new Phaser.Game(1300, 600, Phaser.AUTO, 'GAME', { preload: preload, c
             }
 
            
-
+          } //Change to bottom. This might fix bug
 
          
           game.physics.arcade.collide(coverGroup, connectedSprites[socket.id]);
@@ -348,7 +348,7 @@ var game = new Phaser.Game(1300, 600, Phaser.AUTO, 'GAME', { preload: preload, c
   
 
           }
-   	}
+   //	}
 
  }
 
@@ -430,5 +430,5 @@ function destroyBullet(playerID, bulletID){
 function playExplosion(x,y){
 		explosion = game.add.sprite(x,y, 'explosion', 'explosion0001.png');
       	explosion.animations.add('explode', Phaser.Animation.generateFrameNames('explosion', 1, 3,'.png', 4), 10, false, false);
-        explosion﻿.animations.play('explode', 5, false, true);
+        explosion﻿.animations.play('explode', 10, false, true);
 }
