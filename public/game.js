@@ -53,7 +53,57 @@ var game = new Phaser.Game(1300, 600, Phaser.AUTO, 'GAME', { preload: preload, c
         firstConnection = false;
 
 
-               game.physics.startSystem(Phaser.Physics.ARCADE);
+               /*game.physics.startSystem(Phaser.Physics.ARCADE);
+              game.stage.disableVisibilityChange = true;﻿
+              game.input.enabled = false;
+
+              game.scale.pageAlignHorizontally = true;
+              //game.scale.pageAlignVertically = true; //might not needas
+              //game.scale.refresh();
+              game.add.tileSprite(0,0,1300,600, 'background');
+
+
+              coverGroup = game.add.group();
+
+              coverGroup.physicsBodyType = Phaser.Physics.ARCADE;
+              coverGroup.enableBody = true;
+
+
+              coverGroup.add(game.add.sprite(400,250, 'verticalWall'));
+              coverGroup.add(game.add.sprite(400,250, 'verticalWallLarge'));
+              coverGroup.add(game.add.sprite(500,75, 'verticalWallLarge'));
+              coverGroup.add(game.add.sprite(200,450, 'box'));
+              coverGroup.add(game.add.sprite(0,100, 'horizontalWall'));
+              coverGroup.add(game.add.sprite(50,100, 'horizontalWallLarge'));
+              coverGroup.add(game.add.sprite(100,320, 'rock'));
+
+              //firstConnection = false; //needs to be false
+
+              coverGroup.setAll('body.immovable', true);
+
+
+              bulletSpeed = 500;
+              fireRate = 300; //higher = slower
+              nextFire = 0;
+              bulletAllowance = 20;
+
+              respawnX = 40;
+              respawnY = 40;
+
+              upKey = game.input.keyboard.addKey(Phaser.Keyboard.W);
+              downKey = game.input.keyboard.addKey(Phaser.Keyboard.S);
+              rightKey = game.input.keyboard.addKey(Phaser.Keyboard.D);
+              leftKey = game.input.keyboard.addKey(Phaser.Keyboard.A);*/
+
+    
+      socket.on('newNick', function(players, newestPlayer){
+
+        
+
+          //if this is the first connection add all existing players.
+        if(!firstConnection){ 
+
+              game.physics.startSystem(Phaser.Physics.ARCADE);
               game.stage.disableVisibilityChange = true;﻿
               game.input.enabled = false;
 
@@ -94,15 +144,6 @@ var game = new Phaser.Game(1300, 600, Phaser.AUTO, 'GAME', { preload: preload, c
               downKey = game.input.keyboard.addKey(Phaser.Keyboard.S);
               rightKey = game.input.keyboard.addKey(Phaser.Keyboard.D);
               leftKey = game.input.keyboard.addKey(Phaser.Keyboard.A);
-
-    
-      socket.on('newNick', function(players, newestPlayer){
-
-     
-          //if this is the first connection add all existing players.
-        if(!firstConnection){ 
-
-
 
 
 
@@ -147,7 +188,7 @@ var game = new Phaser.Game(1300, 600, Phaser.AUTO, 'GAME', { preload: preload, c
       });
 
       
-       socket.on('disconnect', function(player,onlineCount){
+       socket.on('playerDisconnect', function(player,onlineCount){
 
           //$('#TEST').append($('<div>').text(player.id));
           //$('#TEST').append($('<div>').text(Object.keys(activeBullets[player.id]).length));

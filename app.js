@@ -36,7 +36,7 @@ io.on('connection', function(socket){
 
 		
 		//io.emit('chat message', players.get(socket.id).playerName  + ": " + msg);
-		io.emit('chat message', players[socket.id].playerName  + ": " + msg);
+		io.emit('chat message', players[socket.id].playerName  + ": " + msg);	
 		//io.emit('chat message', msg)
 	});
 
@@ -55,6 +55,7 @@ io.on('connection', function(socket){
 
 				//io.emit('disconnect', players[socket.id].playerName, players.size-1); //This will be change to players.get(socket.id).nickname
 				io.emit('disconnect', players[socket.id], Object.keys(players).length-1);
+				socket.to('game').emit('playerDisconnect', players[socket.id], Object.keys(players).length-1);
 				delete players[socket.id];
 		}
 
