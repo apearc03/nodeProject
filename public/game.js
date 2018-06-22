@@ -53,16 +53,6 @@ var game = new Phaser.Game(1300, 600, Phaser.AUTO, 'GAME', { preload: preload, c
         firstConnection = false;
 
 
-    
-      socket.on('newNick', function(players, newestPlayer){
-
-     
-
-          //if this is the first connection add all existing players.
-        if(!firstConnection){ 
-
-
-
                game.physics.startSystem(Phaser.Physics.ARCADE);
               game.stage.disableVisibilityChange = true;﻿
               game.input.enabled = false;
@@ -104,6 +94,15 @@ var game = new Phaser.Game(1300, 600, Phaser.AUTO, 'GAME', { preload: preload, c
               downKey = game.input.keyboard.addKey(Phaser.Keyboard.S);
               rightKey = game.input.keyboard.addKey(Phaser.Keyboard.D);
               leftKey = game.input.keyboard.addKey(Phaser.Keyboard.A);
+
+    
+      socket.on('newNick', function(players, newestPlayer){
+
+     
+          //if this is the first connection add all existing players.
+        if(!firstConnection){ 
+
+
 
 
 
