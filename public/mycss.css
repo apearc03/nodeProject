@@ -9,8 +9,8 @@
  #chatContainer{
  	/*overflow:   none;*/
     position:   relative;
-    width:      75%;
-    height:     200px;
+    width: 75%;
+    height: 200px;
     border: 1px solid #ccc;
  }
 
@@ -22,11 +22,12 @@
 
 #chatLog{
 
-	overflow:   auto;
-    position:   absolute;
-    bottom:     0;
+	overflow: auto;
+    position:absolute;
+    bottom: 0;
     width: 100%;
     max-height: 200px;
+
 }
 
 

@@ -173,16 +173,15 @@ var game = new Phaser.Game(1300, 600, Phaser.AUTO, 'GAME', { preload: preload, c
           //activeBullets[bullet.id][bullet.num] = game.add.sprite(connectedSprites[bullet.id].getChildAt(1).x,connectedSprites[bullet.id].getChildAt(1).y, 'bulletSprite');
           //activeBullets[bullet.id][bullet.num].checkWorldBounds = true;
           //activeBullets[bullet.id][bullet.num].outOfBoundsKill = true;
-          activeBullets[bullet.id][bullet.num].moveDown();
+          connectedSprites[bullet.id].bringToTop();
+         // activeBullets[bullet.id][bullet.num].moveDown();
+
 
           game.physics.arcade.enable(activeBullets[bullet.id][bullet.num]);
 
           //added for collision
           activeBullets[bullet.id][bullet.num].body.enable = true;
 
-          //
-          //connectedSprites[bullet.id].getChildAt(1).rotation = angleToXY(connectedSprites[bullet.id].getChildAt(1),bullet.xDest,bullet.yDest);
-          //
           game.physics.arcade.moveToXY(activeBullets[bullet.id][bullet.num], bullet.xDest, bullet.yDest, bulletSpeed);
 
       });
@@ -366,12 +365,11 @@ var game = new Phaser.Game(1300, 600, Phaser.AUTO, 'GAME', { preload: preload, c
 
               //activeBullets[socket.id].push(game.add.sprite(connectedSprites[socket.id].x - 4,connectedSprites[socket.id].y - 4, 'bulletSprite'));
               //Kinda works.
-             // var gunAngle = connectedSprites[socket.id].getChildAt(1).angle + connectedSprites[socket.id].angle;
-              //var p = new Phaser.Point(connectedSprites[socket.id].x, connectedSprites[socket.id].y); 
-              //p2 = p.rotate(connectedSprites[socket.id].x, connectedSprites[socket.id].y, gunAngle, true, 25);
-             // activeBullets[socket.id].push(game.add.sprite(p2.x,p2.y, 'bulletSprite'));
+             	/*var gunAngle = connectedSprites[socket.id].getChildAt(1).angle;
+              var p = new Phaser.Point(connectedSprites[socket.id].x, connectedSprites[socket.id].y); 
+             	p2 = p.rotate(connectedSprites[socket.id].x, connectedSprites[socket.id].y, gunAngle, true, 25);
+              activeBullets[socket.id].push(game.add.sprite(p2.x,p2.y, 'bulletSprite'));*/
 
-              
               //Workin method
               activeBullets[socket.id].push(game.add.sprite(connectedSprites[socket.id].x+connectedSprites[socket.id].width/2,connectedSprites[socket.id].y+connectedSprites[socket.id].height/2, 'bulletSprite'));
 
@@ -380,7 +378,8 @@ var game = new Phaser.Game(1300, 600, Phaser.AUTO, 'GAME', { preload: preload, c
 
               //activeBullets[socket.id][latestIndex].checkWorldBounds = true;
               //activeBullets[socket.id][latestIndex].outOfBoundsKill = true;
-              activeBullets[socket.id][latestIndex].moveDown();
+              connectedSprites[socket.id].bringToTop();
+              //activeBullets[socket.id][latestIndex].moveDown();
 
               game.physics.arcade.enable(activeBullets[socket.id][latestIndex]);
 
