@@ -140,6 +140,9 @@ io.on('connection', function(socket){
 
 			//socket.broadcast.emit('collisionFromServ',playerHit,playerShooter,bulletID);
 			socket.to('game').emit('collisionFromServ',playerHit,playerShooter,bulletID);
+			players[playerHit].x = 40;
+			players[playerHit].y = 40;
+			//change playerhit server location to 40,40
 	})
 
 
