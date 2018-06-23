@@ -36,7 +36,9 @@ io.on('connection', function(socket){
 
 		
 		//io.emit('chat message', players.get(socket.id).playerName  + ": " + msg);
-		io.emit('chat message', players[socket.id].playerName  + ": " + msg);	
+		//io.emit('chat message', players[socket.id].playerName  + ": " + msg);
+		io.in('game').emit('chat message', players[socket.id].playerName  + ": " + msg);	//Emit chat messages to users inside game including sender.
+
 		//io.emit('chat message', msg)
 	});
 

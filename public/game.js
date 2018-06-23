@@ -126,7 +126,7 @@ var game = new Phaser.Game(1300, 600, Phaser.AUTO, 'GAME', { preload: preload, c
 
                         activeBullets[sock] = [];
                          
-                        //$('#TEST').append($('<div>').text(test.width/2));
+                        
                      }
                  }
                 firstConnection = true; 
@@ -137,8 +137,7 @@ var game = new Phaser.Game(1300, 600, Phaser.AUTO, 'GAME', { preload: preload, c
                 connectedSprites[newestPlayer.id].addChild(game.add.text(0+players[newestPlayer.id].playerName.length/2, -30, players[newestPlayer.id].playerName, { font: "15px Arial", fill: "#ffffff" }));
                 connectedSprites[newestPlayer.id].addChild(game.add.sprite(connectedSprites[newestPlayer.id].width/2,connectedSprites[newestPlayer.id].height/2, 'gun2'));
                 connectedSprites[newestPlayer.id].getChildAt(1).anchor.setTo(0.5, 0.5);
-                //$('#TEST').append($('<div>').text(players[newestPlayer.id].playerName.length/2));
-                //  
+               
                 game.physics.arcade.enable(connectedSprites[newestPlayer.id]);
                 //connectedSprites[newestPlayer.id].body.enable = true;
                 //
@@ -152,8 +151,7 @@ var game = new Phaser.Game(1300, 600, Phaser.AUTO, 'GAME', { preload: preload, c
       
        socket.on('playerDisconnect', function(player,onlineCount){
 
-          //$('#TEST').append($('<div>').text(player.id));
-          //$('#TEST').append($('<div>').text(Object.keys(activeBullets[player.id]).length));
+        
 
           //destroys player
           connectedSprites[player.id].destroy();
@@ -218,7 +216,7 @@ var game = new Phaser.Game(1300, 600, Phaser.AUTO, 'GAME', { preload: preload, c
       	socket.on('turretRotated',function(player, x,y){
 
       		connectedSprites[player].getChildAt(1).rotation = game.physics.arcade.angleToXY(connectedSprites[player], x, y);
-      		//$('#TEST').prepend($('<div>').text(connectedSprites[player].getChildAt(1).rotation));
+      		
       	});
 
     
@@ -239,8 +237,7 @@ var game = new Phaser.Game(1300, 600, Phaser.AUTO, 'GAME', { preload: preload, c
             connectedSprites[socket.id].body.velocity.y = 0;
 
 
-            //$('#TEST').prepend($('<div>').text(connectedSprites[socket.id].getChildAt(1).angle));
-            //testing
+            
 
             connectedSprites[socket.id].getChildAt(1).rotation = game.physics.arcade.angleToXY(connectedSprites[socket.id], game.input.mousePointer.x, game.input.mousePointer.y);
 
@@ -273,7 +270,7 @@ var game = new Phaser.Game(1300, 600, Phaser.AUTO, 'GAME', { preload: preload, c
                       }
                       else if(BulletOutOfBounds(activeBullets[id][bullet])){
                             destroyBullet(id,bullet);
-                            //$('#TEST').prepend($('<div>').text("BULLET DELETED"));
+                         
                       }
                       else{
                                     if(id!==socket.id){
@@ -286,8 +283,7 @@ var game = new Phaser.Game(1300, 600, Phaser.AUTO, 'GAME', { preload: preload, c
               									playExplosion(connectedSprites[socket.id].x, connectedSprites[socket.id].y);
                                             //activeBullets[id][bullet].destroy();
                                             //delete activeBullets[id][bullet];
-                                            //$('#TEST').append($('<div>').text(activeBullets[id][bullet]));
-                                            //$('#TEST').append($('<div>').text("OVERLAPPING"));
+                                            
                                               	connectedSprites[socket.id].x = respawnX;
                                               	connectedSprites[socket.id].y = respawnY;
                                             //Destroy player. Later reduce hp.
@@ -341,7 +337,7 @@ var game = new Phaser.Game(1300, 600, Phaser.AUTO, 'GAME', { preload: preload, c
                             connectedSprites[socket.id].body.velocity.y = 200;
                             moved = true; 
                 }
-                //$('#TEST').prepend($('<div>').text(cover.getBounds()));
+                
         }
     
 
@@ -406,7 +402,7 @@ var game = new Phaser.Game(1300, 600, Phaser.AUTO, 'GAME', { preload: preload, c
               num:latestIndex
               }); //think i need to emit object of single bullet here
 
-              //$('#TEST').prepend($('<div>').text(activeBullets[socket.id].length));  
+             
 
   
 
@@ -421,7 +417,7 @@ var game = new Phaser.Game(1300, 600, Phaser.AUTO, 'GAME', { preload: preload, c
       if(bullet.x<0-bulletAllowance || bullet.x>game.width || bullet.y <0-bulletAllowance || bullet.y>game.height){
 
 
-        //$('#TEST').prepend($('<div>').text("BULLET OUT OF BOUNDS")); 
+   
         return true;
       }
       
