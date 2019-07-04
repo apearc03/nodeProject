@@ -1,4 +1,6 @@
+//PHASER framwork for game used here. Uses socket.io
 
+//Setup a new Phaser.Game object. With dimensions 1300 x 600 pixels. Load into the 'GAME' div.
 var game = new Phaser.Game(1300, 600, Phaser.AUTO, 'GAME', { preload: preload, create: create, update: update });
 
   	
@@ -6,10 +8,10 @@ var game = new Phaser.Game(1300, 600, Phaser.AUTO, 'GAME', { preload: preload, c
 
 
 
-   //PHASER FUNCTIONS
-
+   
+      
      function preload() {
-
+        //images and animations loaded in.
         game.load.image('ship', 'assets/tankNON.png');
         game.load.image('bulletSprite', 'assets/ball5.png');
         game.load.image('verticalWall', 'assets/wallVertical.png');
@@ -21,14 +23,20 @@ var game = new Phaser.Game(1300, 600, Phaser.AUTO, 'GAME', { preload: preload, c
         game.load.image('verticalWallLarge', 'assets/largeWall.png');
         game.load.image('rock', 'assets/rock.png');
         game.load.atlasJSONHash('explosion', 'assets/explosion.png', 'assets/explosion.json');
+
+        //sounds loaded in.
+        game.load.audio("shoot", ["assets/Shoot.ogg"]);
+        game.load.audio("explode", ["assets/Explode.ogg"]);
      } 
 
    
     
 
-  //var connectedPlayers;
+
   var firstConnection;
+  //Keep track of the connectedSprites positions. so that the client can render them
   var connectedSprites = {};
+  //Keep track of all the bullets, used to detect collision with the client's player
   var activeBullets = {};
   var bulletAllowance; //How far out of bounds a bullet can be before being destroyed
   var bulletSpeed;
@@ -48,34 +56,40 @@ var game = new Phaser.Game(1300, 600, Phaser.AUTO, 'GAME', { preload: preload, c
 
   var explosion;
 
+  //Sound
+  var shootSound;
+  var explodeSound;
+
+
     function create(){        
+
 
         firstConnection = false;
 
-
-    
+        //Receive a message when a new player joins the game.
       socket.on('newNick', function(players, newestPlayer){
 
         
 
-          //if this is the first connection add all existing players.
+          //if this client is the new player then add all sprites and existing players.
         if(!firstConnection){ 
-
+              //Sound
+              shootSound = game.add.audio("shoot");
+              explodeSound = game.add.audio("explode");
+              //Start the phaser physics engine
               game.physics.startSystem(Phaser.Physics.ARCADE);
               game.stage.disableVisibilityChange = true;﻿
               game.input.enabled = false;
 
               game.scale.pageAlignHorizontally = true;
-              //game.scale.pageAlignVertically = true; //might not needas
-              //game.scale.refresh();
+              //Add the background image
               game.add.tileSprite(0,0,1300,600, 'background');
 
 
+              //Make use of a phaser group for all the cover sprites and add them.
               coverGroup = game.add.group();
-
               coverGroup.physicsBodyType = Phaser.Physics.ARCADE;
               coverGroup.enableBody = true;
-
 
               coverGroup.add(game.add.sprite(400,250, 'verticalWallLarge'));
               coverGroup.add(game.add.sprite(500,75, 'verticalWallLarge'));
@@ -89,11 +103,10 @@ var game = new Phaser.Game(1300, 600, Phaser.AUTO, 'GAME', { preload: preload, c
               coverGroup.add(game.add.sprite(1200,400, 'rock'));
               coverGroup.add(game.add.sprite(950,200, 'rock'));
 
-              //firstConnection = false; //needs to be false
-
+              //Set the cover to be immovable otherwise the physics and players will make them move.
               coverGroup.setAll('body.immovable', true);
 
-
+              //Variables for player settings. These variables should probably be set on the server side.
               bulletSpeed = 500;
               fireRate = 300; //higher = slower
               nextFire = 0;
@@ -111,7 +124,7 @@ var game = new Phaser.Game(1300, 600, Phaser.AUTO, 'GAME', { preload: preload, c
 
           game.input.enabled = true;
 
-
+            //Loop through all the players sent from the server and add a sprite in the correct position for each of them.
             for (var sock in players){    
                   if (players.hasOwnProperty(sock)){
 
@@ -121,8 +134,7 @@ var game = new Phaser.Game(1300, 600, Phaser.AUTO, 'GAME', { preload: preload, c
                         connectedSprites[sock].getChildAt(1).anchor.setTo(0.5, 0.5);
                         //
                         game.physics.arcade.enable(connectedSprites[sock]);
-                        //connectedSprites[sock].body.enable = true;
-                        //
+
 
                         activeBullets[sock] = [];
                          
@@ -132,15 +144,14 @@ var game = new Phaser.Game(1300, 600, Phaser.AUTO, 'GAME', { preload: preload, c
                 firstConnection = true; 
             }
             else{
-
+                //If the player has already connected and is in the game. Just add the new player to the game. 
                 connectedSprites[newestPlayer.id] = game.add.sprite(players[newestPlayer.id].x,players[newestPlayer.id].y, 'ship');
                 connectedSprites[newestPlayer.id].addChild(game.add.text(0+players[newestPlayer.id].playerName.length/2, -30, players[newestPlayer.id].playerName, { font: "15px Arial", fill: "#ffffff" }));
                 connectedSprites[newestPlayer.id].addChild(game.add.sprite(connectedSprites[newestPlayer.id].width/2,connectedSprites[newestPlayer.id].height/2, 'gun2'));
                 connectedSprites[newestPlayer.id].getChildAt(1).anchor.setTo(0.5, 0.5);
                
                 game.physics.arcade.enable(connectedSprites[newestPlayer.id]);
-                //connectedSprites[newestPlayer.id].body.enable = true;
-                //
+    
                 activeBullets[newestPlayer.id] = [];
             }
 
@@ -148,7 +159,7 @@ var game = new Phaser.Game(1300, 600, Phaser.AUTO, 'GAME', { preload: preload, c
 
       });
 
-      
+        //Receive messages from the server about players disconnecting so that the clients can destroy the sprite and release resources.
        socket.on('playerDisconnect', function(player,onlineCount){
 
         
@@ -167,14 +178,14 @@ var game = new Phaser.Game(1300, 600, Phaser.AUTO, 'GAME', { preload: preload, c
                
       });
 
-
+       //The client needs to receive data from the server whenever a client moves so that it can update the related sprite's position.
       socket.on('playerMoved', function(player){
 
           connectedSprites[player.id].x = player.x;
           connectedSprites[player.id].y = player.y;
       });
          
-
+      //When a bullet is fired from a player, the server needs to send all clients
       socket.on('bulletFromServ',function(bullet){
 
           activeBullets[bullet.id][bullet.num] = game.add.sprite(connectedSprites[bullet.id].x + connectedSprites[bullet.id].width/2,connectedSprites[bullet.id].y + connectedSprites[bullet.id].height/2, 'bulletSprite');
@@ -204,17 +215,13 @@ var game = new Phaser.Game(1300, 600, Phaser.AUTO, 'GAME', { preload: preload, c
 
            destroyBullet(playerShooter,bulletID);
 
-           //activeBullets[playerShooter][bulletID].destroy();
-          //delete activeBullets[playerShooter][bulletID];
-          //move playerHIT to respawn.
-          //destroy and delete bullets.
-          //can increment playerShooter score later.
+    
       });
 
    
 
       	socket.on('turretRotated',function(player, x,y){
-
+          //Rotate the turret of the specified player to the coordinates received from the server.
       		connectedSprites[player].getChildAt(1).rotation = game.physics.arcade.angleToXY(connectedSprites[player], x, y);
       		
       	});
@@ -243,7 +250,7 @@ var game = new Phaser.Game(1300, 600, Phaser.AUTO, 'GAME', { preload: preload, c
 
 
             if(game.input.activePointer.withinGame){
-    			
+    			//Send the mouse coordinates to the server. So that they can be relayed to all other clients.
  				socket.emit('turretRotation', socket.id, game.input.mousePointer.x, game.input.mousePointer.y);
 
             }
@@ -265,29 +272,28 @@ var game = new Phaser.Game(1300, 600, Phaser.AUTO, 'GAME', { preload: preload, c
           for(var id in activeBullets){
               for(var bullet in activeBullets[id]){
 
+                      //Bullet collides with terrain
                       if(game.physics.arcade.collide(coverGroup, activeBullets[id][bullet])){ //Alter for when cover is part of a group
                         destroyBullet(id,bullet);
                       }
+                      //Bullet is out of bounds and is deleted to release resources and reduce the amount of bullets to keep track of
                       else if(BulletOutOfBounds(activeBullets[id][bullet])){
-                            destroyBullet(id,bullet);
-                         
+                            destroyBullet(id,bullet);  
                       }
                       else{
+
+                                    //If the bullet ID is not equal to the players. (Every bullet but the player's)
                                     if(id!==socket.id){
-                                        //if(activeBullets[id][bullet].overlap(connectedSprites[socket.id])){
+                                      //Check if the bullet collides with the player.
                                         	if(game.physics.arcade.collide(activeBullets[id][bullet], connectedSprites[socket.id])){
                                         		destroyBullet(id,bullet);
-
+                                              //Emit a collision message to the server.
                                             	socket.emit('collision', socket.id, id, bullet);
 
-              									playExplosion(connectedSprites[socket.id].x, connectedSprites[socket.id].y);
-                                            //activeBullets[id][bullet].destroy();
-                                            //delete activeBullets[id][bullet];
-                                            
+              									               playExplosion(connectedSprites[socket.id].x, connectedSprites[socket.id].y);
+                                          
                                               	connectedSprites[socket.id].x = respawnX;
                                               	connectedSprites[socket.id].y = respawnY;
-                                            //Destroy player. Later reduce hp.
-                                            //emit collision to server
   
                                                }     
                                       }
@@ -302,7 +308,7 @@ var game = new Phaser.Game(1300, 600, Phaser.AUTO, 'GAME', { preload: preload, c
             
           
 
-
+          //Constantly check for input in the update function. Move the player sprite accordingly
          if (leftKey.isDown) {
             if(connectedSprites[socket.id].x>0){
 
@@ -340,15 +346,14 @@ var game = new Phaser.Game(1300, 600, Phaser.AUTO, 'GAME', { preload: preload, c
                 
         }
     
-
+        //If the left mouse button is down, call the fireBullet method.
         if(game.input.activePointer.isDown){
 
             fireBullet();
              
         }
-       
+          //Emit the players movements to the server.
           if(moved){
-
             socket.emit('moved',connectedSprites[socket.id].x,connectedSprites[socket.id].y);
             moved = false;
   
@@ -359,24 +364,16 @@ var game = new Phaser.Game(1300, 600, Phaser.AUTO, 'GAME', { preload: preload, c
  }
 
 
-
+  //Called whenever the client fires a bullet.
   function fireBullet(){
 
       if(game.time.now > nextFire){
               
 
-
+              shootSound.play('',0,0.1,false);
               nextFire = game.time.now + fireRate;
 
-
-              //activeBullets[socket.id].push(game.add.sprite(connectedSprites[socket.id].x - 4,connectedSprites[socket.id].y - 4, 'bulletSprite'));
-              //Kinda works.
-             	/*var gunAngle = connectedSprites[socket.id].getChildAt(1).angle;
-              var p = new Phaser.Point(connectedSprites[socket.id].x, connectedSprites[socket.id].y); 
-             	p2 = p.rotate(connectedSprites[socket.id].x, connectedSprites[socket.id].y, gunAngle, true, 25);
-              activeBullets[socket.id].push(game.add.sprite(p2.x,p2.y, 'bulletSprite'));*/
-
-              //Workin method
+              //Working method
               activeBullets[socket.id].push(game.add.sprite(connectedSprites[socket.id].x+connectedSprites[socket.id].width/2,connectedSprites[socket.id].y+connectedSprites[socket.id].height/2, 'bulletSprite'));
 
 
@@ -404,9 +401,6 @@ var game = new Phaser.Game(1300, 600, Phaser.AUTO, 'GAME', { preload: preload, c
 
              
 
-  
-
-
 
           }    
   }
@@ -416,8 +410,6 @@ var game = new Phaser.Game(1300, 600, Phaser.AUTO, 'GAME', { preload: preload, c
 
       if(bullet.x<0-bulletAllowance || bullet.x>game.width || bullet.y <0-bulletAllowance || bullet.y>game.height){
 
-
-   
         return true;
       }
       
@@ -432,9 +424,11 @@ function destroyBullet(playerID, bulletID){
     delete activeBullets[playerID][bulletID];
 
 }
-
+//Use phaser to play the explosion animations.
 function playExplosion(x,y){
-		explosion = game.add.sprite(x,y, 'explosion', 'explosion0001.png');
+        //Add the explosion sprite to where the player has just been hit.
+        explodeSound.play('',0,0.1,false);
+		    explosion = game.add.sprite(x,y, 'explosion', 'explosion0001.png');
       	explosion.animations.add('explode', Phaser.Animation.generateFrameNames('explosion', 1, 3,'.png', 4), 10, false, false);
         explosion﻿.animations.play('explode', 10, false, true);
 }

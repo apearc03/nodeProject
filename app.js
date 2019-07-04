@@ -1,45 +1,45 @@
 
+//SERVER FILE 
 
 var app = require('express')();
 var express= require('express');
 var http = require('http').Server(app);
+//Require socket.io for server/client communication
 var io = require('socket.io')(http);
 
+//Start the app on port 3000
+var port= Number(3000);
 
-var port= Number(process.env.PORT || 3000);
 
 app.use(express.static(__dirname + '/public'));
 
-
-
+//When a client connects to the default directory, return public/index.html as the response.
 app.get('/',function(req,res){
 	res.sendFile(__dirname + '/public/index.html');
 });
 
 
 http.listen(port, function(){
-	console.log("App running on port 3000");
+	console.log("App running at http://localhost:3000/");
 });
 
 
-
+//Object to keep track of the connected players
 var players = {};
+//Variable used for a socket.io group. Represents any players that are in game.
 var game = 'game';
-//var players = new Map(); 
 
-
+//When a client sends a 'connection' message, listen for further messages and game events.
 io.on('connection', function(socket){
 
+	//Print when a user connects for testing purposes
 	console.log(socket.id + " user connected");
+
 
 	socket.on('chat message', function(msg){
 
-		
-		//io.emit('chat message', players.get(socket.id).playerName  + ": " + msg);
-		//io.emit('chat message', players[socket.id].playerName  + ": " + msg);
 		io.in('game').emit('chat message', players[socket.id].playerName  + ": " + msg);	//Emit chat messages to users inside game including sender.
 
-		//io.emit('chat message', msg)
 	});
 
 
@@ -93,7 +93,7 @@ io.on('connection', function(socket){
 		}
 
 
-
+		//If taken is false emit a message that a new player is joining the game.
 		if(!taken){
 			//check if nickname is taken. Emit to the socket only not all sockets.
 			//players.set(socket.id,nick); //Instead mapping socket.id to nickname. Map socket.id to a new player object that includes a nickname.
@@ -106,18 +106,17 @@ io.on('connection', function(socket){
 			};
 
 			socket.join(game);
-			//newNick client code called before the player is connected
+			//newNick is sent with the new player object who is about to join the game.
 			io.in('game').emit('newNick', players, players[socket.id]);
-			//io.emit('newNick', players, players[socket.id]);
 		}
 
-
+		//Take is either true or false.
 		socket.emit('nameTaken', taken); //Emit if the nickname was taken or not.
 
 
 	});
 
-
+	//The server needs to receive a message from a client whenever the player is moved.
 	socket.on('moved',function(x,y){
 
 			

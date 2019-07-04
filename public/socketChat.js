@@ -1,14 +1,15 @@
- var socket = io();
+//Script to create chat log, uses socket.io.
+
+var socket = io();
 var connectionLogMax = 50;
 var chatLogMax = 50;
 
-
-$(function(){	//document ready
+//Document is ready.
+$(function(){	
 
  
 
-//
-
+    //Hide the game canvas and errors when the page first loads.Don't need to be shown until the player enters a nickname.
     $('#GAME').hide();
    $('#container').hide();
    $('#nickError').hide();
@@ -20,7 +21,7 @@ $(function(){	//document ready
 
  });
 
-    //input control between chat and game
+    //Prevents input collisions between chat and game canvas
     $('#m').on("focus", function(){
               game.input.enabled = false;
         });
@@ -58,23 +59,25 @@ $(function(){	//document ready
       var validated = /^[A-Z]+$/i.test(trimmed); //Check if trimmed nickname only contains letters
 
           
-  
+    //Various validation on nickname.
       if(validated){
 
         if(trimmed.length<10){
 
             socket.emit('nickname',$('#nickname').val());
-
+                //Receives message back from server on whether the nickname is taken or not and reacts accordingly.
                  socket.on('nameTaken', function(taken){
 
                       if(taken){
+                          //Show error message when the name is taken.
                           $('#nickError').text("The nickname is taken");
                           $('#nickError').show();
                       }
                       else{
+                        //Hide the error and main div with the controls and title
                         $('#nickError').hide();
-                        //$('#nickSubmit').hide();
                         $('#main').hide();
+                        //Show the game chat and game canvas.
                         $('#container').show();
                         $('#GAME').show();
                       }
@@ -102,7 +105,7 @@ $(function(){	//document ready
   
 
   
-
+    //When a client has chosen a valid nickname, the server sends a message out to all clients.
     socket.on('newNick', function(players, player){
 
       $('#log').append($('<div>').text(player.playerName + "  connected"));
@@ -125,10 +128,10 @@ $(function(){	//document ready
 
     });
 
-
+    //Receive a new chat message from the server.
   	socket.on('chat message', function(msg){
   	
-
+        //Append it to the chat div
   			$('#chatLog').append($('<div class ="chatmessages">').text(msg));
 
 
@@ -138,11 +141,6 @@ $(function(){	//document ready
 
   	
   
-
-
-
-
-    //CHAT UPDATE
 
     function chatUpdate(parent, maxEntries) {
 
